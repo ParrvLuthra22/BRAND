@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------- */
+/* Clash Display — self-hosted, drop woff2 files into /public/fonts.      */
+/* See CLAUDE.md "Fonts" for the exact filenames + license note.          */
+/* ---------------------------------------------------------------------- */
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  /* Design tokens — do not rename. See CLAUDE.md "Design tokens". */
+  --color-bg: #0a0a0a;
+  --color-bg-raised: #141414;
+  --color-concrete: #2a2a2a;
+  --color-paper: #f2f0eb;
+  --color-muted: #8a8a85;
+  --color-line: #2e2e2e;
+  --color-acid: #c6ff00;
+  --color-acid-dim: #9bc900;
+  --color-sale: #ff3b00;
+
+  --font-display: "Clash Display", sans-serif;
+  /* --font-body / --font-mono are re-pointed to the next/font/google
+     CSS variables (see app/layout.tsx) directly below this block. */
+  --font-body: "Space Grotesk", sans-serif;
+  --font-mono: "Space Mono", monospace;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Fluid type scale — use as text-hero, text-display, text-h2, etc. */
+  --text-hero: clamp(4rem, 18vw, 20rem);
+  --text-hero--line-height: 1;
+
+  --text-display: clamp(2.5rem, 8vw, 7rem);
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.03em;
+
+  --text-h2: clamp(1.75rem, 4vw, 3rem);
+  --text-h2--line-height: 1.05;
+
+  --text-h3: clamp(1.25rem, 2.5vw, 1.75rem);
+  --text-h3--line-height: 1.15;
+
+  --text-body: clamp(1rem, 1.1vw, 1.125rem);
+  --text-body--line-height: 1.5;
+
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.4;
+
+  --text-mono: 0.75rem;
+  --text-mono--line-height: 1;
+
+  /* Uppercase mono tracking — pair with `uppercase font-mono text-mono`. */
+  --tracking-mono: 0.08em;
+
+  /* Brutalist: sharp corners everywhere except pill CTAs (rounded-full,
+     which Tailwind implements outside this scale and is left untouched). */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+}
+
+/* next/font/google variables (declared in app/layout.tsx) become the real
+   font sources; the human-readable family names above stay as fallbacks. */
+:root {
+  --font-body: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --font-mono: var(--font-space-mono), "Space Mono", monospace;
+}
+
+/* Motion durations — read by GSAP/Framer Motion configs in /lib, and by
+   the transition-duration utilities below. Keep in sync with lib/gsap.ts. */
+:root {
+  --dur-fast: 0.4s;
+  --dur-med: 0.8s;
+  --dur-slow: 1.2s;
+}
+
+@utility mono-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-mono);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+}
+
+/* Global grain overlay — see components/ui/Grain.tsx */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}

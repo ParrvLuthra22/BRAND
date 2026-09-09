@@ -162,6 +162,7 @@ components/webgl/       ogl/WebGL shader + image-sequence components
                         will mount real canvases from here)
 lib/gsap.ts             shared gsap + ScrollTrigger export (registers the plugin once)
 lib/lenis.tsx           LenisProvider + useLenis()
+lib/loader.ts           loader session/event contract + real asset preloading
 lib/utils.ts            cn() (clsx + tailwind-merge)
 lib/cart-store.ts       zustand cart store
 data/products.ts        Product type + seed catalog
@@ -195,13 +196,62 @@ without changing the data shape.
 ## Homepage
 
 `app/page.tsx` renders, in this fixed order:
-`Loader → Hero → SceneUnfold → SceneRail → Manifesto → TheDrop → ShopGrid → Footer`
+`Hero → SceneUnfold → SceneRail → Manifesto → TheDrop → ShopGrid → Footer`
 
-All eight are currently bare placeholder stubs in `components/sections/`
+`Loader` is mounted separately, in `app/layout.tsx` (see below) — it isn't
+part of `page.tsx`. `SceneUnfold`, `SceneRail`, `Manifesto`, `TheDrop`, and
+`ShopGrid`/`Footer` are still bare placeholder stubs in `components/sections/`
 (brand tokens applied, no real animation/WebGL/data-fetching logic yet).
 `SceneUnfold` and `SceneRail` are where the two scroll-driven WebGL scenes
 get built — they're the only homepage sections allowed to reach into
 `components/webgl`.
+
+## Loader → Hero handoff
+
+`Loader` (`components/sections/Loader.tsx`) is mounted once in
+`app/layout.tsx`, not in `app/page.tsx`. That placement matters: the root
+layout doesn't remount on client-side route changes, so the loader mounts
+exactly once per hard navigation and never replays when navigating between
+routes client-side.
+
+- **Session gating**: `lib/loader.ts` exports `hasLoaderPlayed()` /
+  `markLoaderPlayed()`, backed by `sessionStorage` (`brand:loader-played`).
+  On mount, `Loader` checks this in a `useLayoutEffect` (before paint, so
+  there's never a flash) — if already played this session (e.g. a hard
+  refresh after the intro already ran), it renders nothing and immediately
+  calls `dispatchLoaderComplete()` so `Hero` isn't left waiting forever.
+- **Real preloading, not a fake timer**: `getCriticalPreloadTargets()` in
+  `lib/loader.ts` lists the hero image, the first `SceneUnfold` sequence
+  frame (standing in for "hero video" until Hero has one), and the two
+  critical font weights. `Loader` runs them through `Promise.all`, and the
+  0→100% counter is `resolvedCount / total`, updated as each one resolves —
+  never a `setInterval`/fake-progress timer. Every individual loader
+  (`preloadImage`/`preloadFont`) resolves on both success AND failure (`img
+  .onerror` / `.catch()`), so a 404 (real today — `/public/media` and the
+  Clash Display woff2s aren't committed yet) can never hang the gate.
+- **Glitch tied to real progress**: the RGB-split wordmark's jitter
+  amplitude is `MAX_OFFSET * (1 - progress/100)` — it's driven by the same
+  load progress as the counter, not a separate fixed-length animation, so it
+  always finishes converging exactly when loading finishes.
+- **The handoff event**: on completion, `Loader` calls `markLoaderPlayed()`
+  then `dispatchLoaderComplete()` (fires `window` `CustomEvent`
+  `LOADER_COMPLETE_EVENT` = `"brand:loader-complete"`) and starts its
+  mask-wipe (`clip-path` animation) in the same tick — Hero's intro and the
+  wipe run concurrently, not sequentially. `Hero` listens for that event to
+  start its own intro, **but only if it hasn't already checked
+  `hasLoaderPlayed()` and started immediately** — this dual path is what
+  makes Hero correct both on first load (waits for the event) and after a
+  client-side route change back to `/` (loader doesn't remount/fire again,
+  so Hero must self-start via the session flag instead).
+- **Reduced motion**: checked once via `matchMedia` in the same
+  pre-paint `useLayoutEffect`. Reduced-motion skips the RGB-split glitch
+  layers entirely (renders the plain wordmark) and replaces the mask-wipe
+  with a fast plain-opacity fade. Preloading still runs for real either way —
+  reduced motion changes the animation, not the gating.
+
+Any future component that needs "has the intro finished" should use the same
+pair (`hasLoaderPlayed()` fast-path + `LOADER_COMPLETE_EVENT` listener) that
+`Hero` uses, not just one or the other.
 
 ## ESLint
 

@@ -1,4 +1,3 @@
-import { Loader } from "@/components/sections/Loader";
 import { Hero } from "@/components/sections/Hero";
 import { SceneUnfold } from "@/components/sections/SceneUnfold";
 import { SceneRail } from "@/components/sections/SceneRail";
@@ -10,7 +9,6 @@ import { Footer } from "@/components/sections/Footer";
 export default function Home() {
   return (
     <>
-      <Loader />
       <Hero />
       <SceneUnfold />
       <SceneRail />

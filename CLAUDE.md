@@ -113,13 +113,14 @@ intentionally **overrides** Tailwind's built-in `ease-out` utility — every
 
 Defined under `--text-*` in `@theme`, so they're plain Tailwind font-size
 utilities — `text-hero`, `text-display`, `text-h2`, `text-h3`, `text-body`,
-`text-caption`, `text-mono`. Line-height (and, for `display`, `-0.03em`
-letter-spacing) is baked into each token via Tailwind v4's
+`text-caption`, `text-mono`. Line-height and `-0.03em` letter-spacing (both
+`hero` and `display` — the wordmark scale needs it at least as much as
+section headlines) are baked into each token via Tailwind v4's
 `--text-{name}--line-height` / `--text-{name}--letter-spacing` sibling
-convention — you don't need to set line-height manually when using these.
+convention — you don't need to set either manually when using these.
 
 ```
-hero     clamp(4rem, 18vw, 20rem)
+hero     clamp(4rem, 18vw, 20rem)     — tracking -0.03em
 display  clamp(2.5rem, 8vw, 7rem)   — tracking -0.03em
 h2       clamp(1.75rem, 4vw, 3rem)
 h3       clamp(1.25rem, 2.5vw, 1.75rem)
@@ -157,9 +158,12 @@ to special-case Lenis on top of the CSS block.
 app/                    routes (App Router)
 components/ui/          small shared primitives (Grain, buttons, etc.)
 components/sections/    homepage/PDP section-level components
-components/webgl/       ogl/WebGL shader + image-sequence components
-                        (empty scaffold so far — SceneUnfold/SceneRail
-                        will mount real canvases from here)
+components/webgl/       ogl/WebGL shader + image-sequence components.
+                        HeroCanvas.tsx + heroShaders.ts back the Hero's
+                        displacement shader (see "Hero WebGL" below).
+                        SceneUnfold/SceneRail will mount their own canvases
+                        here next — reuse heroShaders.ts's pattern rather
+                        than duplicating the OGL setup.
 lib/gsap.ts             shared gsap + ScrollTrigger export (registers the plugin once)
 lib/lenis.tsx           LenisProvider + useLenis()
 lib/loader.ts           loader session/event contract + real asset preloading
@@ -199,12 +203,12 @@ without changing the data shape.
 `Hero → SceneUnfold → SceneRail → Manifesto → TheDrop → ShopGrid → Footer`
 
 `Loader` is mounted separately, in `app/layout.tsx` (see below) — it isn't
-part of `page.tsx`. `SceneUnfold`, `SceneRail`, `Manifesto`, `TheDrop`, and
-`ShopGrid`/`Footer` are still bare placeholder stubs in `components/sections/`
-(brand tokens applied, no real animation/WebGL/data-fetching logic yet).
-`SceneUnfold` and `SceneRail` are where the two scroll-driven WebGL scenes
-get built — they're the only homepage sections allowed to reach into
-`components/webgl`.
+part of `page.tsx`. `Hero` is fully built (see "Hero WebGL" below).
+`SceneUnfold`, `SceneRail`, `Manifesto`, `TheDrop`, and `ShopGrid`/`Footer`
+are still bare placeholder stubs in `components/sections/` (brand tokens
+applied, no real animation/WebGL/data-fetching logic yet). `SceneUnfold` and
+`SceneRail` are the next sections that will reach into `components/webgl`
+(alongside `Hero`, which already does) for their own scroll-driven scenes.
 
 ## Loader → Hero handoff
 
@@ -252,6 +256,85 @@ routes client-side.
 Any future component that needs "has the intro finished" should use the same
 pair (`hasLoaderPlayed()` fast-path + `LOADER_COMPLETE_EVENT` listener) that
 `Hero` uses, not just one or the other.
+
+## Hero WebGL (`components/webgl/HeroCanvas.tsx` + `heroShaders.ts`)
+
+`Hero` renders a fullscreen OGL canvas behind its overlay content: a single
+fullscreen-triangle mesh (`ogl`'s `Triangle` geometry needs no camera) with a
+custom fragment shader doing cover-fit UV mapping, noise-based liquid
+displacement that follows a lerped pointer position, chromatic aberration
+that eases in on hover, film grain, and a vignette. `heroShaders.ts` holds
+the GLSL verbatim — treat it as hand-authored source, not something to
+"clean up"; `SceneRail`'s planned displacement pass should reuse this same
+program with smaller `amt`/`ca` rather than duplicating it.
+
+- **Uniforms**: `uTexture`, `uMouse` (lerp factor 0.08, range -0.5..0.5),
+  `uTime`, `uHover` (tweened 0↔1 over 0.6s via `EASE_OUT` on
+  pointerenter/leave), `uResolution`, `uImageSize`. `uHover` is tweened by
+  calling `gsap.to()` directly on the uniform object's `value` — GSAP can
+  tween any plain object property, not just DOM styles.
+- **DPR is capped** at `Math.min(devicePixelRatio, 2)` when constructing the
+  `Renderer`.
+- **Lazy/lifecycle-correct**: everything (Renderer/Program/Mesh/Texture,
+  listeners, rAF loop) is created in one `useEffect` and torn down in its
+  cleanup — `cancelAnimationFrame`, disconnect the `ResizeObserver` and
+  `IntersectionObserver`, remove pointer listeners, `gsap.killTweensOf` the
+  hover uniform, and `gl.getExtension('WEBGL_lose_context')?.loseContext()`.
+  The `IntersectionObserver` starts/stops the rAF loop as the hero scrolls
+  in/out of view.
+- **Context loss**: a `webglcontextlost` listener calls `preventDefault()`
+  (per spec, without it the browser won't even attempt recovery), stops the
+  rAF loop, and calls the `onError` prop — Hero treats that exactly like
+  "no WebGL" and swaps to the `<img>` fallback. This isn't theoretical: a
+  backgrounded/hidden tab is a real trigger for the GPU process reclaiming
+  contexts (confirmed while building this — `document.hidden` was `true` in
+  the dev browser tab used to test it, and the context was lost within a few
+  seconds). Never try to resume rendering on the same lost context — the
+  compiled program and uploaded texture are gone with it; falling back is
+  simpler and correct.
+- **Fallback conditions** (`Hero`, not `HeroCanvas`, decides these): no
+  WebGL support, `prefers-reduced-motion: reduce`, or "mobile-lite" (coarse
+  pointer **and** `max-width: 767px` — both together, so a wide touch
+  laptop still gets WebGL). Checked once in a pre-paint `useLayoutEffect`
+  with the same SSR-safe-default pattern as the loader/reduced-motion checks
+  elsewhere: `useState(false)` (matches server + first client render, so no
+  hydration mismatch) upgraded synchronously before paint.
+
+### yPercent vs. a CSS transform class — do not reintroduce
+
+The wordmark's mask-reveal (`Hero`'s `<h1>`, animated via `gsap.set`/`.to`
+with `yPercent`) **must not** get its pre-JS hidden state from a Tailwind
+transform utility class (e.g. `translate-y-full`). This was a real bug hit
+while building Hero: with the class present, GSAP's transform parser reads
+the class-driven `translate: 0 100%` as part of the element's initial
+*computed* `transform`, caches that as a frozen pixel `y` baseline, and then
+never reconciles it with the animated `yPercent` — the tween's `onUpdate`
+and `onComplete` fire correctly and `gsap.getProperty(el, "yPercent")`
+reports the right values throughout, but the actual painted `transform`
+never changes. The element silently never appears, with no error.
+
+The fix: let GSAP own the element's transform state from the very first
+paint. `Hero`'s top-level `useLayoutEffect` calls
+`gsap.set(wordmarkRef.current, { yPercent: 100 })` directly — no CSS class
+establishes any transform on that element, ever. This is safe pre-loader-
+complete because the Loader overlay is still covering the page at that
+point anyway. If you add another `yPercent`/`xPercent`-animated element,
+follow the same pattern: no static transform-utility class, seed the hidden
+state via `gsap.set` instead. Plain pixel `y`/`x` and `autoAlpha` (used for
+the eyebrow/moodline/scroll cue) don't have this problem — only the
+percent-based transform properties parse a pre-existing computed transform
+this way.
+
+### `EASE_OUT` (`lib/gsap.ts`)
+
+`lib/gsap.ts` now also registers `CustomEase` and defines `EASE_OUT =
+"brandOut"`, an SVG-path equivalent of the `--ease-out` design token
+(`cubic-bezier(0.16, 1, 0.3, 1)` → `"M0,0 C0.16,1 0.3,1 1,1"`). GSAP's core
+`ease` option can't parse a raw CSS `cubic-bezier()` string, so this is the
+one registered, reusable way to get that exact curve in GSAP tweens —
+import `EASE_OUT` from `@/lib/gsap` and pass it as `ease: EASE_OUT` rather
+than approximating with a named GSAP ease (`power3.out` etc.) or
+hand-rolling another `CustomEase.create` call elsewhere.
 
 ## ESLint
 

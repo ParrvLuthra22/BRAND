@@ -56,6 +56,7 @@
   /* Fluid type scale — use as text-hero, text-display, text-h2, etc. */
   --text-hero: clamp(4rem, 18vw, 20rem);
   --text-hero--line-height: 1;
+  --text-hero--letter-spacing: -0.03em;
 
   --text-display: clamp(2.5rem, 8vw, 7rem);
   --text-display--line-height: 1;

@@ -42,7 +42,7 @@ export function ShopGrid() {
   }, [prefersReduced]);
 
   return (
-    <section className="px-6 py-24 md:px-10">
+    <section id="shop" className="scroll-mt-20 px-6 py-24 md:px-10">
       <h2 className="mb-12 text-h3 font-display uppercase text-paper">
         Shop the Drop
       </h2>

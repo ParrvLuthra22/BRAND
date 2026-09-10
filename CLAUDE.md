@@ -23,8 +23,8 @@ budget. Everything past that — PDP, cart, checkout — must stay fast and clea
 |---|---|
 | `lenis` | Smooth scroll, driven by GSAP's ticker. |
 | `gsap` (+ `ScrollTrigger`) | Scroll-driven animation for the two spectacle scenes. |
-| `framer-motion` | Component-level transitions/gestures (not scroll choreography) — Manifesto's `whileInView` line reveals, ProductCard's hover tilt. |
-| `zustand` | Cart store (`lib/cart-store.ts`), read by `components/ui/CartDrawer.tsx` and pushed to by `TheDrop`/`ProductCard`. |
+| `framer-motion` | Component-level transitions/gestures (not scroll choreography) — Manifesto's `whileInView` line reveals, ProductCard's hover tilt, and every global overlay's enter/exit (CartDrawer, CaptureModal, the PDP lightbox). |
+| `zustand` | `lib/cart-store.ts` (persisted to localStorage — see "Global commerce UI") and `lib/capture-modal-store.ts`, both the same tiny isOpen/open/close overlay-state shape. |
 | `ogl` | Minimal WebGL for the shader work in `components/webgl` — no Three.js. |
 | `embla-carousel-react` | SceneRail's mobile carousel only — desktop never touches it. |
 | `clsx` + `tailwind-merge` | `cn()` helper in `lib/utils.ts`. |
@@ -156,15 +156,19 @@ to special-case Lenis on top of the CSS block.
 ## Structure
 
 ```
-app/                    routes (App Router)
-components/ui/          small shared primitives. Grain and CartDrawer are
-                        mounted globally in app/layout.tsx, like Loader.
-                        ProductCard is different — not globally mounted, a
-                        plain reusable component (see "ShopGrid" below);
-                        it's here rather than components/sections/ because
-                        it's meant to be reused across sections (ShopGrid
-                        today, a future PDP upsell rail), not tied to one.
-components/sections/    homepage/PDP section-level components
+app/                    routes (App Router). app/products/[id]/page.tsx is
+                        the PDP — see "Product Detail Page" below.
+components/ui/          small shared primitives. Grain, TopNav, CartDrawer,
+                        and CaptureModal are mounted globally in
+                        app/layout.tsx, like Loader (see "Global commerce
+                        UI" below). ProductCard is different — not globally
+                        mounted, a plain reusable component (see "ShopGrid"
+                        below); it's here rather than components/sections/
+                        because it's reused across sections (ShopGrid,
+                        the PDP's RelatedProducts rail), not tied to one.
+components/sections/    homepage/PDP section-level components. ProductOverview,
+                        SpecStory, ProductFAQ, and RelatedProducts are the
+                        PDP's — see "Product Detail Page" below.
 components/webgl/       ogl/WebGL shader + image-sequence components.
                         HeroCanvas.tsx + heroShaders.ts back the Hero's
                         displacement shader (see "Hero WebGL" below).
@@ -173,15 +177,17 @@ components/webgl/       ogl/WebGL shader + image-sequence components.
                         (no WebGL — see "SceneUnfold" below). RailTransition
                         Canvas.tsx is SceneRail's shared between-items
                         transition overlay — reuses heroShaders.ts directly
-                        (see "SceneRail" below).
+                        (see "SceneRail" below). Never PDP/cart — those stay
+                        WebGL-free by design, see the top of this file.
 lib/gsap.ts             shared gsap + ScrollTrigger export (registers the plugin once)
 lib/lenis.tsx           LenisProvider + useLenis()
 lib/loader.ts           loader session/event contract + real asset preloading
 lib/utils.ts            cn() (clsx + tailwind-merge), EASE_OUT (framer-motion
                         bezier array version of lib/gsap.ts's EASE_OUT), and
                         formatPrice() (cents -> "$X.XX", shared by CartDrawer/
-                        TheDrop/ProductCard)
-lib/cart-store.ts       zustand cart store
+                        TheDrop/ProductCard/ProductOverview)
+lib/cart-store.ts       zustand cart store, persisted to localStorage
+lib/capture-modal-store.ts  zustand isOpen/open/close for CaptureModal
 data/products.ts        Product type + seed catalog
 public/media/           images/, sequence/ (scroll-scrubbed frames), video/
 public/fonts/           self-hosted Clash Display woff2s (not committed yet)
@@ -197,6 +203,8 @@ type Product = {
   priceMRP: number;       // cents
   priceSale?: number;     // cents; only set when the item is discounted
   soldOut?: boolean;      // only set true when out of stock
+  hook: string;           // one punchy standalone line — the PDP's headline
+  useCase: string;        // one line grounding it in an actual moment of wear
   colorway: string;
   sizes: string[];
   images: {
@@ -222,6 +230,13 @@ in `SceneRail`.
 `soldOut` is `true` for exactly one seed product (`hoodie-concrete`) so
 `ProductCard`'s disabled state has something to render against — every
 other product is implicitly in stock (field absent, not `false`).
+
+`hook`/`useCase` are unconditionally required (unlike the optional fields
+above) — every product needs PDP copy, there's no "featured product only"
+carve-out here the way there is for `sequenceFrames`/`details`. Both are
+hand-written per product, matching that product's `moodLine` tone (see the
+seed data) — not derived from other fields, since a punchy one-liner isn't
+something you can template.
 
 `hoodie-blackout` is the one product with `sequenceFrames` **and** `details`
 populated — it's the featured product for both `SceneUnfold`'s reveal and
@@ -250,13 +265,14 @@ assets replace these.
 `Loader` is mounted separately, in `app/layout.tsx` (see below) — it isn't
 part of `page.tsx`. `Hero`, `SceneUnfold`, `SceneRail`, `Manifesto`,
 `TheDrop`, and `ShopGrid` are fully built (see their own sections below).
-`Footer` is still a bare placeholder stub in `components/sections/` (brand
-tokens applied, no real content yet).
+`Footer` is minimal but no longer a stub — name, copyright line, and a
+"Join the Cult" button that opens `CaptureModal` (see "Global commerce UI").
 
-`CartDrawer` (`components/ui/CartDrawer.tsx`) is mounted globally in
-`app/layout.tsx`, not in `page.tsx` — it's `TheDrop`'s and `ProductCard`'s
-shared Add to Cart destination but persists across every route, mirroring
-`Loader`'s mount-once-in-the-layout placement (see below).
+`TopNav`, `CartDrawer`, and `CaptureModal` (all `components/ui/`) are
+mounted globally in `app/layout.tsx`, not in `page.tsx` — they persist
+across every route (homepage and the PDP alike), mirroring `Loader`'s
+mount-once-in-the-layout placement (see below). Full detail in "Global
+commerce UI".
 
 ## Loader → Hero handoff
 
@@ -507,9 +523,11 @@ a real structural difference.
   frame-index drawing does. Backdrop images preload in the background purely
   for the WebGL overlay's texture; if they're not ready yet, the overlay
   (already invisible at rest) just has nothing to show, which is fine.
-- **`Explore` links point at `/product/<id>`** — that route doesn't exist
-  yet (no PDP built). This is deliberate structure-ahead-of-content, same
-  as the product image paths pointing at files that don't exist yet.
+- **`Explore` links point at `/products/<id>`** (plural — matches the real
+  PDP route, `app/products/[id]/page.tsx`; see "Product Detail Page" below).
+  These links predate the PDP and originally pointed at the singular
+  `/product/<id>`, deliberate structure-ahead-of-content at the time; they
+  were corrected to the plural route once the PDP actually shipped.
 
 ## Manifesto (`components/sections/Manifesto.tsx`)
 
@@ -655,6 +673,171 @@ for unification — see "SceneRail" above).
   stub; a fourth copy for `ProductCard` was the point past which sharing it
   made more sense than repeating it a fourth time. All three call sites now
   import the one in `lib/utils.ts`.
+
+## Global commerce UI (`components/ui/TopNav.tsx`, `CartDrawer.tsx`, `CaptureModal.tsx`)
+
+All three are mounted once in `app/layout.tsx` (see "Homepage" above) and
+persist across every route — none of them live in `app/page.tsx` or the PDP.
+
+**TopNav** — hidden at the very top (Hero is deliberately chrome-free) and
+slides in once the user has actually scrolled. Uses a *trigger-less*
+`ScrollTrigger.create({ start: 80, end: "max", onEnter, onLeaveBack })` —
+no `trigger` element, so `start`/`end` are plain scroll-position numbers
+rather than "element crosses viewport" strings; this is the right tool
+specifically because there's no single element to anchor to; a scroll
+event listener would also work but this reuses the plugin already
+registered globally in `lib/gsap.ts`. The show/hide transition itself is
+plain CSS (`-translate-y-full`/`translate-y-0` Tailwind classes toggled by
+React state) — no GSAP tween touches this element's transform, so (unlike
+the Hero/SceneUnfold `yPercent` gotcha) a Tailwind transform-utility class
+here is completely safe. Cart count reads `lines.reduce((n,l)=>n+l.quantity,0)`
+from `useCartStore`; clicking it calls `toggle()` — the one place that
+store method is actually used (everywhere else calls `open()` directly
+after an add-to-cart).
+
+**Sticky columns vs. TopNav**: introducing a fixed, appears-on-scroll nav
+broke `TheDrop`'s and `ProductOverview`'s sticky image columns, which were
+both originally `md:sticky md:top-0 md:h-screen` — once stuck, the nav
+(fixed, higher stacking, appears past the same scroll position) would sit
+on top of the first ~80px of the image permanently, not just transiently.
+Both were changed to `md:sticky md:top-20 md:h-[calc(100vh-5rem)]`. Any
+future sticky-positioned column should use this same offset, not `top-0`.
+
+**CartDrawer** — rewritten this round from a CSS-transition panel to
+`AnimatePresence` + `motion.aside`/`motion.div` (`x: "100%"` <-> `x: 0` for
+the panel, opacity for the overlay), matching the task's explicit "slide-in
+from right (framer-motion)" — the one exception to this codebase's
+"GSAP owns scroll, framer-motion owns component gestures" split is that
+framer-motion also owns every *global overlay's* enter/exit (this drawer,
+CaptureModal, the PDP lightbox), none of which are scroll-driven.
+- **Persisted to localStorage** (`lib/cart-store.ts`, zustand `persist`
+  middleware, key `brand:cart`, `partialize` to just `{ lines }` —
+  `isOpen`/`hasHydrated` are transient UI state, not cart contents worth
+  surviving a reload).
+- **`hasHydrated` isn't decorative** — it's load-bearing for correctness.
+  SSR always renders the store's default `lines: []`; persist's rehydration
+  from localStorage happens asynchronously after mount, so if the drawer
+  rendered "Your cart is empty" immediately, a returning visitor with a
+  real cart would see that flash before their lines populate. `hasHydrated`
+  (flipped `true` inside `onRehydrateStorage`'s returned callback) gates a
+  third body state — a `animate-pulse` skeleton — shown until rehydration
+  actually completes, distinct from the real empty state.
+- **MRP total / savings**: `mrpTotal = sum(priceMRP * qty)`, shown
+  struck-through only when it differs from `subtotal` (i.e. `savings > 0`);
+  the savings figure itself uses `text-sale`, following the same precedent
+  as everywhere else sale-price gets that color — it's sale-derived, not an
+  arbitrary accent, so it doesn't violate the "acid is the one accent"
+  color rule.
+- **Quantity stepper per line** uses the store's `setQuantity` — previously
+  written but unused until this round. Decrementing to 0 calls `removeItem`
+  instead of ever writing a 0-quantity line.
+- **Checkout** is a real `<Link href="/checkout">`, styled as the CTA — that
+  route doesn't exist yet, deliberate structure-ahead-of-content, the exact
+  same precedent `/products/<id>` links were built on before the PDP shipped.
+
+**CaptureModal** — "JOIN THE CULT" email capture, brand voice throughout
+(never "subscribe"). Own tiny store, `lib/capture-modal-store.ts` (same
+isOpen/open/close shape as the cart store); currently triggered from
+`Footer`'s "Join the Cult" button only — wire up any future trigger (nav,
+exit-intent, etc.) through that same store rather than adding local state.
+- **States are `idle | loading | success | error`**, all real and
+  deterministic — no backend exists, so `submitEmail()` is a `setTimeout`
+  that resolves on a valid email and rejects on an invalid one. `error` is
+  reached both by client-side validation (regex check before ever calling
+  `submitEmail`) and by the simulated rejection — same state either way,
+  so there's one error path to test, not two. Success replaces the form
+  entirely with a confirmation, rather than disabling it in place.
+- Reopening the modal always resets to a blank `idle` form (a `useEffect`
+  keyed on `isOpen`) — a prior success/error doesn't linger behind the next
+  open.
+
+## Product Detail Page (`app/products/[id]/page.tsx`)
+
+Server component: `generateStaticParams()` returns one entry per product
+(all 6 statically prerendered), `generateMetadata()` sets a per-product
+`<title>`/description, and an unmatched `id` calls `notFound()`. Next.js 15
+makes route `params` a `Promise` for both — `const { id } = await params;`
+in each. The page itself just resolves the product and composes four client
+sections in order: `ProductOverview -> SpecStory -> ProductFAQ ->
+RelatedProducts`, then `Footer` (not part of the homepage's `page.tsx`, so
+PDP renders its own copy — see "Homepage" above).
+
+**ProductOverview** (`components/sections/ProductOverview.tsx`) — sticky
+gallery + purchase panel, the PDP's above-the-fold block.
+- **Gallery images**: a local `galleryFor(product)` builds `[main, alt,
+  ...gallery, ...(details && [fabric, print, stitch])]` — every product
+  gets a real thumbnail rail this way (`gallery`/`main`/`alt` exist on all
+  6), not just `hoodie-blackout`, which is the only one with `details`
+  populated (see "Product data" above).
+- **Lightbox** is a colocated local component (tightly coupled to the
+  gallery's `activeIndex` state, not reused elsewhere, so it isn't a
+  `components/ui/` primitive) — fullscreen `motion.div`, Escape/←/→ keyboard
+  nav, `stopPropagation` on the image and prev/next controls so only
+  clicking the backdrop closes it.
+- **Purchase panel copy order**: colorway (eyebrow) -> name (`h1` — this is
+  the page's real heading, unlike `TheDrop`'s `h2`) -> `moodLine` -> `hook`
+  -> `useCase` -> price block -> size chips -> quantity stepper -> Add to
+  Cart -> "Ships within 24–48h". Size-chip/price-block styling is copied
+  verbatim from `TheDrop` for visual consistency across the site.
+- **Quantity** is local state (`useState(1)`, capped at 10), passed as
+  `addItem(product, size, quantity)` — the store's `addItem` already took
+  an optional `quantity` param (written for this, unused until now).
+  `soldOut` disables the whole size/qty/CTA block (`opacity-50` +
+  `disabled` on every control), not just the button — same disabled
+  footprint precedent as `ProductCard`'s Sold Out state.
+
+**SpecStory** (`components/sections/SpecStory.tsx`) — "spec as story": the
+three `product.specs` entries (`fabric`/`cut`/`print`) as full-width
+chapters, alternating image/text side via `md:order-1`/`md:order-2` (not a
+`direction: rtl` trick) and alternating `bg-bg`/`bg-bg-raised` per chapter
+using existing tokens — no new colors, the "themed" differentiation is
+structural, not palette-based. Reveal is the exact same one-shot mask-wipe
+`ScrollTrigger` pattern as `TheDrop`'s detail panels (`clipPath: inset(0%
+0% 100% 0%) -> inset(0%)`, `once: true`, `top 80%`), just full-width per
+chapter instead of stacked in a side column. There's no dedicated "cut"
+image field — `chapterImage()` falls back through `gallery` ->
+`main`/`alt` so every chapter is populated for every product, same
+fallback spirit as `ProductOverview`'s `galleryFor()`.
+
+**ProductFAQ** (`components/sections/ProductFAQ.tsx`) — fit / wash care /
+sizing / drop timing, answers computed from the product's own
+`specs`/`sizes`/`soldOut` (a `faqFor(product)` function) rather than static
+boilerplate, so "product-specific" is actually true — no new data fields
+needed, everything it reads already exists on `Product`. Expand/collapse
+is the CSS `grid-template-rows: 0fr -> 1fr` trick (a `grid` wrapper
+animating `grid-template-rows` via `transition-[grid-template-rows]`,
+inner `overflow-hidden` child) — no JS height measurement, no GSAP/framer,
+deliberately the lightest-weight animation technique in the codebase,
+matching the top-of-file mandate that PDP/cart stay fast and WebGL/GSAP-
+pin-free. (Framer-motion wasn't reached for either — this isn't a gesture
+or an overlay, it's a scroll-independent height transition, outside both
+established framer-motion and GSAP use cases here.)
+
+**RelatedProducts** (`components/sections/RelatedProducts.tsx`) — "You May
+Also Like", a plain **server** component (no `"use client"`, no scroll
+reveal of its own) — `ProductCard` already carries its own client
+interactivity, and PDP's fast/clean mandate is better served by shipping
+zero extra client JS for this section than by adding a staggered entrance.
+`relatedTo()` sorts same-category (by `id` prefix, `"hoodie"`/`"tee"` —
+there's no dedicated category field, the prefix is good enough for this)
+before other products, caps at 4. Rendered as a plain native
+`overflow-x-auto snap-x` rail, not a pinned/carousel one — no scroll-
+jacking on PDP, same rule `SceneRail`'s mobile mode already follows.
+
+**Gotcha — this environment's rAF throttling delays CSS transitions too,
+not just GSAP/rAF-driven JS.** While testing `ProductFAQ`'s grid-rows
+transition and `CartDrawer`/`CaptureModal`'s framer-motion exit animations
+live in this browser-automation tab, `getComputedStyle()` continued
+reporting the *pre*-transition value (e.g. `grid-template-rows: 0px`, a
+still-mounted "closed" dialog) for 1–3+ seconds after the state change and
+click had already landed correctly (confirmed via the *inline* style,
+which reflected the new value immediately — only the computed/rendered
+value lagged). This is the same `document.hidden`/no-real-focus root cause
+documented under "Manifesto" and "Hero WebGL" above, just showing up as
+delayed layout/paint instead of a dead observer or a lost GPU context. If
+a transition or exit animation looks "stuck" mid-test here, wait longer
+and recheck the *inline* style (the JS-side source of truth) before
+assuming the code is wrong.
 
 ## ESLint
 

@@ -183,7 +183,7 @@ export function SceneRail() {
               <p className="max-w-xl text-display font-display uppercase text-paper">
                 {product.moodLine}
               </p>
-              <Link href={`/product/${product.id}`} className={EXPLORE_LINK_CLASS}>
+              <Link href={`/products/${product.id}`} className={EXPLORE_LINK_CLASS}>
                 Explore
               </Link>
             </div>
@@ -248,7 +248,7 @@ function RailCard({
         <p className="text-h3 font-display uppercase text-paper">
           {product.moodLine}
         </p>
-        <Link href={`/product/${product.id}`} className={EXPLORE_LINK_CLASS}>
+        <Link href={`/products/${product.id}`} className={EXPLORE_LINK_CLASS}>
           Explore
         </Link>
       </div>

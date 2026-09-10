@@ -68,7 +68,7 @@ export function TheDrop() {
   return (
     <section className="bg-bg">
       <div className="grid grid-cols-1 md:grid-cols-2">
-        <div className="md:sticky md:top-0 md:h-screen">
+        <div className="md:sticky md:top-20 md:h-[calc(100vh-5rem)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={product.images.main}

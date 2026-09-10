@@ -29,6 +29,10 @@ export type Product = {
   priceSale?: number;
   /** Only set true for products currently out of stock — absent/false everywhere else. */
   soldOut?: boolean;
+  /** One punchy standalone line — the PDP's attention-grabbing headline, distinct from moodLine. */
+  hook: string;
+  /** One line of who/when/where — grounds the hook in an actual moment of wear. */
+  useCase: string;
   colorway: string;
   sizes: string[];
   images: ProductImages;
@@ -72,6 +76,8 @@ export const products: Product[] = [
     moodLine: "HEAVY. CROPPED. RELENTLESS.",
     priceMRP: 12800,
     priceSale: 9600,
+    hook: "Weighs on you like a decision you haven't made yet.",
+    useCase: "For 4am walks home and every room you want to leave without saying bye.",
     colorway: "Jet Black",
     sizes: SIZES,
     images: {
@@ -101,6 +107,8 @@ export const products: Product[] = [
     moodLine: "RAW. OVERSIZED. UNBOTHERED.",
     priceMRP: 13200,
     soldOut: true,
+    hook: "Built like it's never once apologized.",
+    useCase: "For grey days, long commutes, and not making eye contact.",
     colorway: "Concrete Grey",
     sizes: SIZES,
     images: {
@@ -127,6 +135,8 @@ export const products: Product[] = [
     moodLine: "HEAVY. CROPPED. RELENTLESS.",
     priceMRP: 5800,
     priceSale: 4200,
+    hook: "Cut short. Patience shorter.",
+    useCase: "Layer it, don't explain it.",
     colorway: "Jet Black",
     sizes: SIZES,
     images: {
@@ -152,6 +162,8 @@ export const products: Product[] = [
     name: "Static Tee",
     moodLine: "LOUD. FADED. UNAPOLOGETIC.",
     priceMRP: 5800,
+    hook: "Already lived in. Never lived down.",
+    useCase: "For the after-party you weren't invited to.",
     colorway: "Acid Wash Grey",
     sizes: SIZES,
     images: {
@@ -177,6 +189,8 @@ export const products: Product[] = [
     name: "Concrete Jungle Tee",
     moodLine: "RAW. OVERSIZED. UNBOTHERED.",
     priceMRP: 6200,
+    hook: "Made for pavement, not pleasantries.",
+    useCase: "City block, back alley, either exit.",
     colorway: "Concrete Grey",
     sizes: SIZES,
     images: {
@@ -203,6 +217,8 @@ export const products: Product[] = [
     moodLine: "SHARP. ACID. UNSEEN.",
     priceMRP: 6200,
     priceSale: 4900,
+    hook: "Catches light. Holds attention.",
+    useCase: "For the room you walk into last, on purpose.",
     colorway: "Paper White",
     sizes: SIZES,
     images: {

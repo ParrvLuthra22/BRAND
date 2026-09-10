@@ -2,6 +2,10 @@ export type ProductImages = {
   main: string;
   alt: string;
   gallery: string[];
+  /** Transparent-background PNG, garment isolated — SceneRail's floating cutout. */
+  cutout: string;
+  /** Full-bleed backdrop plate behind the cutout in SceneRail. */
+  backdrop: string;
 };
 
 export type ProductSpecs = {
@@ -36,6 +40,14 @@ function sequenceFrames(count: number): string[] {
   );
 }
 
+// SceneRail's cutout + backdrop plate, per product.
+function railImages(id: string): Pick<ProductImages, "cutout" | "backdrop"> {
+  return {
+    cutout: `/media/images/${id}/cutout.png`,
+    backdrop: `/media/images/${id}/backdrop.jpg`,
+  };
+}
+
 export const products: Product[] = [
   {
     id: "hoodie-blackout",
@@ -53,6 +65,7 @@ export const products: Product[] = [
         "/media/images/hoodie-blackout/gallery-2.jpg",
         "/media/images/hoodie-blackout/gallery-3.jpg",
       ],
+      ...railImages("hoodie-blackout"),
     },
     // The featured product for the homepage's SceneUnfold reveal.
     sequenceFrames: sequenceFrames(60),
@@ -78,6 +91,7 @@ export const products: Product[] = [
         "/media/images/hoodie-concrete/gallery-1.jpg",
         "/media/images/hoodie-concrete/gallery-2.jpg",
       ],
+      ...railImages("hoodie-concrete"),
     },
     sequenceFrames: [],
     description:
@@ -103,6 +117,7 @@ export const products: Product[] = [
         "/media/images/tee-relentless/gallery-1.jpg",
         "/media/images/tee-relentless/gallery-2.jpg",
       ],
+      ...railImages("tee-relentless"),
     },
     sequenceFrames: [],
     description:
@@ -127,6 +142,7 @@ export const products: Product[] = [
         "/media/images/tee-static/gallery-1.jpg",
         "/media/images/tee-static/gallery-2.jpg",
       ],
+      ...railImages("tee-static"),
     },
     sequenceFrames: [],
     description:
@@ -151,6 +167,7 @@ export const products: Product[] = [
         "/media/images/tee-concrete-jungle/gallery-1.jpg",
         "/media/images/tee-concrete-jungle/gallery-2.jpg",
       ],
+      ...railImages("tee-concrete-jungle"),
     },
     sequenceFrames: [],
     description:
@@ -176,6 +193,7 @@ export const products: Product[] = [
         "/media/images/tee-signal/gallery-1.jpg",
         "/media/images/tee-signal/gallery-2.jpg",
       ],
+      ...railImages("tee-signal"),
     },
     sequenceFrames: [],
     description:

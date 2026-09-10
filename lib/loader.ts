@@ -56,7 +56,10 @@ function preloadFont(family: string, weight: string): Promise<void> {
 // (e.g. Clash Display's woff2s, or media not dropped in yet) still resolve
 // via the onerror/catch branches above — a 404 must never hang the loader.
 export const HERO_IMAGE_SRC = "/media/images/hero/hero-main.jpg";
-export const FIRST_SEQUENCE_FRAME_SRC = "/media/sequence/scene-unfold/0001.jpg";
+// Matches data/products.ts's sequenceFrames(60)[0] for the SceneUnfold
+// reveal — kept as a literal here rather than importing data/products.ts,
+// since this file's preload contract is intentionally data-agnostic.
+export const FIRST_SEQUENCE_FRAME_SRC = "/media/sequence/frame_0001.webp";
 
 export function getCriticalPreloadTargets(): PreloadTarget[] {
   return [

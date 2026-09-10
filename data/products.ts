@@ -27,6 +27,15 @@ export type Product = {
 
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
+// SceneUnfold's scroll-scrubbed reveal frames — 4-digit, zero-padded,
+// matching the filenames SceneUnfold expects under /public/media/sequence/.
+function sequenceFrames(count: number): string[] {
+  return Array.from(
+    { length: count },
+    (_, i) => `/media/sequence/frame_${String(i + 1).padStart(4, "0")}.webp`
+  );
+}
+
 export const products: Product[] = [
   {
     id: "hoodie-blackout",
@@ -45,7 +54,8 @@ export const products: Product[] = [
         "/media/images/hoodie-blackout/gallery-3.jpg",
       ],
     },
-    sequenceFrames: [],
+    // The featured product for the homepage's SceneUnfold reveal.
+    sequenceFrames: sequenceFrames(60),
     description:
       "Oversized fit built from 480gsm double-lined fleece. Dropped shoulders, boxy body, raw-cut hem.",
     specs: {

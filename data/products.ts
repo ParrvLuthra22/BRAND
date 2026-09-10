@@ -6,6 +6,12 @@ export type ProductImages = {
   cutout: string;
   /** Full-bleed backdrop plate behind the cutout in SceneRail. */
   backdrop: string;
+  /** TheDrop's mask-wipe detail shots — only the featured product needs these. */
+  details?: {
+    fabric: string; // macro
+    print: string; // close-up
+    stitch: string;
+  };
 };
 
 export type ProductSpecs = {
@@ -48,6 +54,15 @@ function railImages(id: string): Pick<ProductImages, "cutout" | "backdrop"> {
   };
 }
 
+// TheDrop's mask-wipe detail shots, per product.
+function detailImages(id: string): NonNullable<ProductImages["details"]> {
+  return {
+    fabric: `/media/images/${id}/detail-fabric.jpg`,
+    print: `/media/images/${id}/detail-print.jpg`,
+    stitch: `/media/images/${id}/detail-stitch.jpg`,
+  };
+}
+
 export const products: Product[] = [
   {
     id: "hoodie-blackout",
@@ -66,6 +81,7 @@ export const products: Product[] = [
         "/media/images/hoodie-blackout/gallery-3.jpg",
       ],
       ...railImages("hoodie-blackout"),
+      details: detailImages("hoodie-blackout"),
     },
     // The featured product for the homepage's SceneUnfold reveal.
     sequenceFrames: sequenceFrames(60),

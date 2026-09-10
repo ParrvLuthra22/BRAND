@@ -4,13 +4,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger, EASE_OUT } from "@/lib/gsap";
 import { products } from "@/data/products";
 import { useCartStore } from "@/lib/cart-store";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 
 const FEATURED = products.find((product) => product.id === "hoodie-blackout")!;
-
-function formatPrice(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`;
-}
 
 const DETAILS: {
   key: keyof NonNullable<(typeof FEATURED)["images"]["details"]>;

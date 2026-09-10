@@ -23,8 +23,8 @@ budget. Everything past that — PDP, cart, checkout — must stay fast and clea
 |---|---|
 | `lenis` | Smooth scroll, driven by GSAP's ticker. |
 | `gsap` (+ `ScrollTrigger`) | Scroll-driven animation for the two spectacle scenes. |
-| `framer-motion` | Component-level transitions/gestures (not scroll choreography) — currently just Manifesto's `whileInView` line reveals. |
-| `zustand` | Cart store (`lib/cart-store.ts`), read by `components/ui/CartDrawer.tsx`. |
+| `framer-motion` | Component-level transitions/gestures (not scroll choreography) — Manifesto's `whileInView` line reveals, ProductCard's hover tilt. |
+| `zustand` | Cart store (`lib/cart-store.ts`), read by `components/ui/CartDrawer.tsx` and pushed to by `TheDrop`/`ProductCard`. |
 | `ogl` | Minimal WebGL for the shader work in `components/webgl` — no Three.js. |
 | `embla-carousel-react` | SceneRail's mobile carousel only — desktop never touches it. |
 | `clsx` + `tailwind-merge` | `cn()` helper in `lib/utils.ts`. |
@@ -157,8 +157,13 @@ to special-case Lenis on top of the CSS block.
 
 ```
 app/                    routes (App Router)
-components/ui/          small shared primitives (Grain, CartDrawer, etc.) —
-                        mounted globally in app/layout.tsx, like Loader
+components/ui/          small shared primitives. Grain and CartDrawer are
+                        mounted globally in app/layout.tsx, like Loader.
+                        ProductCard is different — not globally mounted, a
+                        plain reusable component (see "ShopGrid" below);
+                        it's here rather than components/sections/ because
+                        it's meant to be reused across sections (ShopGrid
+                        today, a future PDP upsell rail), not tied to one.
 components/sections/    homepage/PDP section-level components
 components/webgl/       ogl/WebGL shader + image-sequence components.
                         HeroCanvas.tsx + heroShaders.ts back the Hero's
@@ -172,8 +177,10 @@ components/webgl/       ogl/WebGL shader + image-sequence components.
 lib/gsap.ts             shared gsap + ScrollTrigger export (registers the plugin once)
 lib/lenis.tsx           LenisProvider + useLenis()
 lib/loader.ts           loader session/event contract + real asset preloading
-lib/utils.ts            cn() (clsx + tailwind-merge) + EASE_OUT (framer-motion
-                        bezier array version of lib/gsap.ts's EASE_OUT)
+lib/utils.ts            cn() (clsx + tailwind-merge), EASE_OUT (framer-motion
+                        bezier array version of lib/gsap.ts's EASE_OUT), and
+                        formatPrice() (cents -> "$X.XX", shared by CartDrawer/
+                        TheDrop/ProductCard)
 lib/cart-store.ts       zustand cart store
 data/products.ts        Product type + seed catalog
 public/media/           images/, sequence/ (scroll-scrubbed frames), video/
@@ -189,6 +196,7 @@ type Product = {
   moodLine: string;       // exactly three UPPERCASE words, e.g. "HEAVY. CROPPED. RELENTLESS."
   priceMRP: number;       // cents
   priceSale?: number;     // cents; only set when the item is discounted
+  soldOut?: boolean;      // only set true when out of stock
   colorway: string;
   sizes: string[];
   images: {
@@ -204,10 +212,16 @@ type Product = {
 ```
 
 Seeded with 6 placeholder products (2 hoodies, 4 tees). Image paths point at
-`/media/images/<id>/...` — those files don't exist yet, so `ShopGrid` renders
-text-only cards for now; swap in real photography and `<Image>` components
-without changing the data shape. `cutout`/`backdrop` are populated for all 6
-(via the `railImages(id)` helper) since all 6 appear in `SceneRail`.
+`/media/images/<id>/...` — those files don't exist yet, so every `<img>`
+across the site (`ShopGrid`/`ProductCard` included) renders a broken-image
+icon for now, same as `TheDrop` and `SceneRail`; swap in real photography
+and `<Image>` components without changing the data shape. `cutout`/`backdrop`
+are populated for all 6 (via the `railImages(id)` helper) since all 6 appear
+in `SceneRail`.
+
+`soldOut` is `true` for exactly one seed product (`hoodie-concrete`) so
+`ProductCard`'s disabled state has something to render against — every
+other product is implicitly in stock (field absent, not `false`).
 
 `hoodie-blackout` is the one product with `sequenceFrames` **and** `details`
 populated — it's the featured product for both `SceneUnfold`'s reveal and
@@ -234,15 +248,15 @@ assets replace these.
 `Hero → SceneUnfold → SceneRail → Manifesto → TheDrop → ShopGrid → Footer`
 
 `Loader` is mounted separately, in `app/layout.tsx` (see below) — it isn't
-part of `page.tsx`. `Hero`, `SceneUnfold`, `SceneRail`, `Manifesto`, and
-`TheDrop` are fully built (see their own sections below). `ShopGrid`/`Footer`
-are still bare placeholder stubs in `components/sections/` (brand tokens
-applied, no real animation/data-fetching logic yet).
+part of `page.tsx`. `Hero`, `SceneUnfold`, `SceneRail`, `Manifesto`,
+`TheDrop`, and `ShopGrid` are fully built (see their own sections below).
+`Footer` is still a bare placeholder stub in `components/sections/` (brand
+tokens applied, no real content yet).
 
 `CartDrawer` (`components/ui/CartDrawer.tsx`) is mounted globally in
-`app/layout.tsx`, not in `page.tsx` — it's `TheDrop`'s Add to Cart
-destination but persists across every route, mirroring `Loader`'s
-mount-once-in-the-layout placement (see below).
+`app/layout.tsx`, not in `page.tsx` — it's `TheDrop`'s and `ProductCard`'s
+shared Add to Cart destination but persists across every route, mirroring
+`Loader`'s mount-once-in-the-layout placement (see below).
 
 ## Loader → Hero handoff
 
@@ -583,6 +597,64 @@ The featured-product hero section — `FEATURED` is hardcoded to
   "Homepage" above), reads `lines` from the store, cross-references
   `products` by `line.productId` for name/image/price, and intentionally
   has no Checkout button — out of scope until a real checkout flow exists.
+
+## ShopGrid (`components/sections/ShopGrid.tsx`) + ProductCard (`components/ui/ProductCard.tsx`)
+
+`ShopGrid` maps every product in `data/products.ts` through `ProductCard` —
+a responsive grid (`grid-cols-2` mobile, `md:grid-cols-3`, `lg:grid-cols-4`),
+titled "Shop the Drop". `ProductCard` is built once, here, and is meant to
+be the only place this card's markup/behavior is defined — reuse it as-is
+for any future rail or PDP upsell section rather than rebuilding a
+look-alike; nothing else currently consumes it (`SceneRail`'s `RailCard` is
+a deliberately different, spectacle-oriented card and is not a candidate
+for unification — see "SceneRail" above).
+
+- **Staggered reveal is GSAP ScrollTrigger, not framer-motion** — same
+  one-shot per-element pattern as `TheDrop`'s detail panels
+  (`ScrollTrigger.create({ trigger: el, start: "top 90%", once: true,
+  onEnter: () => gsap.to(el, { autoAlpha: 1, y: 0, ... }) })`, one trigger
+  per card), *not* a `whileInView` container/stagger. This keeps the
+  package boundary in "Packages and why they're here" intact — framer-motion
+  stays component-level (`ProductCard`'s tilt, `Manifesto`'s line reveal),
+  GSAP stays the scroll-choreography tool. Each card's hidden state is
+  seeded via inline `style={{ opacity: 0, transform: "translateY(32px)" }}`
+  — plain inline `style` on `transform`, not a Tailwind transform-utility
+  class, for the same reason called out in the Hero/SceneUnfold sections
+  above. Cards enter row-by-row as they naturally cross the trigger line;
+  a small `(i % 4) * 0.06` delay adds a subtle stagger without hard-coding
+  which responsive breakpoint's column count is active.
+- **`ProductCard`'s image crossfade is plain CSS opacity**, not
+  framer-motion — two absolutely-positioned `<img>`s (`images.main` /
+  `images.alt`) cross-fade via `transition-opacity duration-[var(--dur-fast)]`,
+  toggled by a single `showAlt` boolean. On desktop that boolean flips on
+  `onMouseEnter`/`onMouseLeave`; on touch it flips on tap instead
+  (`onClick`) — which input mode is active is decided once via
+  `matchMedia("(pointer: coarse)")` in a pre-paint `useLayoutEffect`, the
+  same SSR-safe-default pattern used for Hero's mobile-lite check.
+- **Tilt is the one real framer-motion gesture here**: `rotateX`/`rotateY`
+  motion values (wrapped in `useSpring` for the settle-back feel), driven by
+  cursor position relative to the card in `onMouseMove`, capped at
+  `MAX_TILT = 6` degrees, reset to `0` on `onMouseLeave`. Skipped entirely
+  (handler no-ops) when touch is active or `useReducedMotion()` is true —
+  the same framer-motion hook `Manifesto` uses, not a manual `matchMedia`
+  check, since this is a framer-motion-owned effect.
+- **Sale badge vs. sold-out state are independent, data-driven flags** —
+  `priceSale` truthy shows the `Sale` badge (`text-sale`/`border-sale`, per
+  the sale-color-is-reserved rule above) regardless of stock; `soldOut`
+  swaps the CTA to a disabled, muted "Sold Out" button (same footprint —
+  `rounded-full`, same padding — just non-interactive styling, never a
+  differently-shaped button) regardless of discount. A product can be
+  either, both, or neither.
+- **Add to Cart uses the same default-size rule as `TheDrop`**
+  (`sizes.includes("M") ? "M" : sizes[0]`) since `ProductCard` has no size
+  selector of its own, then `addItem(product, size)` + `open()` off
+  `useCartStore` — identical destination as `TheDrop`, both landing in the
+  same global `CartDrawer`.
+- **`formatPrice()` moved to `lib/utils.ts`** during this work — it was
+  independently redefined in `CartDrawer`, `TheDrop`, and the old `ShopGrid`
+  stub; a fourth copy for `ProductCard` was the point past which sharing it
+  made more sense than repeating it a fourth time. All three call sites now
+  import the one in `lib/utils.ts`.
 
 ## ESLint
 

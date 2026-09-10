@@ -3,11 +3,7 @@
 import { useEffect } from "react";
 import { useCartStore } from "@/lib/cart-store";
 import { products } from "@/data/products";
-import { cn } from "@/lib/utils";
-
-function formatPrice(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`;
-}
+import { cn, formatPrice } from "@/lib/utils";
 
 export function CartDrawer() {
   const isOpen = useCartStore((state) => state.isOpen);

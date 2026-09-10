@@ -27,6 +27,8 @@ export type Product = {
   moodLine: string;
   priceMRP: number;
   priceSale?: number;
+  /** Only set true for products currently out of stock — absent/false everywhere else. */
+  soldOut?: boolean;
   colorway: string;
   sizes: string[];
   images: ProductImages;
@@ -98,6 +100,7 @@ export const products: Product[] = [
     name: "Concrete Hoodie",
     moodLine: "RAW. OVERSIZED. UNBOTHERED.",
     priceMRP: 13200,
+    soldOut: true,
     colorway: "Concrete Grey",
     sizes: SIZES,
     images: {

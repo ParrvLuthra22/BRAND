@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# raw source media — not deployed (only public/ is served), not worth
+# versioning either (large, unprocessed). See CLAUDE.md's SceneUnfold
+# section for the conversion pipeline that reads these.
+/_source/
+/public/media/sequence_OLD/

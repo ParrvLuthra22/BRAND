@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { EASE_OUT } from "@/lib/utils";
+import { MANIFESTO_LOOP_WEBM_SRC, MANIFESTO_LOOP_MP4_SRC } from "@/lib/loader";
 
 const LINES = ["NOT DESIGNED TO BLEND IN.", "BUILT TO TAKE UP SPACE."];
 
@@ -25,6 +26,34 @@ export function Manifesto() {
 
   return (
     <section className="relative overflow-hidden bg-bg py-32 md:py-40">
+      {/* Ambient background loop — the same editorial campaign clip that
+          was originally tried in Hero. It reads better here: Manifesto has
+          no "must show the whole photo" constraint the way Hero's rotation
+          shot does, and a moving backdrop suits a brand-statement section
+          more than it does a product hero. Kept explicitly dim (opacity-30
+          composited over the section's own near-black bg-bg) — this is
+          still meant to read as "near-black, heavy grain," per the top of
+          this file's brief, not as a bright video section; the motion
+          should be felt more than seen. z-0 + first in DOM, same as the
+          text/marquee below it, not -z-10 — negative z-index on a
+          position:relative element was a real bug in Hero (see its own
+          CLAUDE.md gotcha); staying non-negative and using DOM order for
+          stacking avoids that whole class of issue here. .grain-heavy's
+          explicit z-10 still sits above everything regardless. */}
+      {!prefersReducedMotion && (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          aria-hidden
+          className="absolute inset-0 z-0 h-full w-full object-cover opacity-30"
+        >
+          <source src={MANIFESTO_LOOP_WEBM_SRC} type="video/webm" />
+          <source src={MANIFESTO_LOOP_MP4_SRC} type="video/mp4" />
+        </video>
+      )}
+
       <div className="grain-heavy" />
 
       <div className="relative z-0 flex flex-col gap-1 px-6 md:px-10">

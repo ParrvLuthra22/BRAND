@@ -24,6 +24,15 @@ export function SceneUnfoldCanvas({
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    // Source frames are 1280x720 (the source video's native resolution —
+    // there's no more detail than that to work with), but this canvas
+    // draws at full viewport size, often 2-3x wider once DPR is factored
+    // in. imageSmoothingQuality defaults to "low" in some browsers, which
+    // makes that upscale look noticeably softer than it needs to;
+    // "high" costs a bit more per drawImage call but this only redraws on
+    // an actual frame-index change, not every rAF tick, so it's cheap here.
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
 
     let width = 0;
     let height = 0;

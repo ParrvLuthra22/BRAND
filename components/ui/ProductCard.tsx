@@ -5,6 +5,7 @@ import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-moti
 import type { Product } from "@/data/products";
 import { useCartStore } from "@/lib/cart-store";
 import { cn, formatPrice } from "@/lib/utils";
+import { ProductImage } from "@/components/ui/ProductImage";
 
 // Subtle tilt cap, in degrees — a "hint" of 3D, not a gimmick.
 const MAX_TILT = 6;
@@ -88,8 +89,7 @@ export function ProductCard({
           </span>
         )}
 
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <ProductImage
           src={product.images.main}
           alt={product.name}
           className={cn(
@@ -97,8 +97,7 @@ export function ProductCard({
             showAlt && "opacity-0"
           )}
         />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <ProductImage
           src={product.images.alt}
           alt=""
           aria-hidden

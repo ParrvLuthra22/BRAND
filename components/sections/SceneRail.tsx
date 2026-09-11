@@ -6,6 +6,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { gsap } from "@/lib/gsap";
 import { products, type Product } from "@/data/products";
 import { RailTransitionCanvas } from "@/components/webgl/RailTransitionCanvas";
+import { ProductImage } from "@/components/ui/ProductImage";
 
 const SCROLL_PER_ITEM_VH = 1; // vertical scroll (viewport heights) per item
 const BACKDROP_PARALLAX = 10; // %, drifts opposite to the cutout
@@ -230,15 +231,13 @@ function RailCard({
   return (
     <div className={className}>
       <div className="relative aspect-[3/4] overflow-hidden bg-concrete">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <ProductImage
           src={product.images.backdrop}
           alt=""
           aria-hidden
           className="absolute inset-0 h-full w-full object-cover"
         />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <ProductImage
           src={product.images.cutout}
           alt={product.name}
           className="absolute inset-0 m-auto h-[62%] w-auto object-contain"

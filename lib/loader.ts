@@ -56,19 +56,19 @@ function preloadFont(family: string, weight: string): Promise<void> {
 // (e.g. Clash Display's woff2s, or media not dropped in yet) still resolve
 // via the onerror/catch branches above — a 404 must never hang the loader.
 export const HERO_IMAGE_SRC = "/media/images/hero/hero.jpg";
-// Matches data/products.ts's sequenceFrames(60)[0] for the SceneUnfold
-// reveal — kept as a literal here rather than importing data/products.ts,
-// since this file's preload contract is intentionally data-agnostic. Still
-// a placeholder path (no real sequence frames delivered yet), same as the
-// data file's own sequenceFrames() call.
-export const FIRST_SEQUENCE_FRAME_SRC = "/media/sequence/frame_0001.webp";
+// Manifesto's background loop (see Manifesto.tsx) — not part of the
+// critical preload gate below. It's well past the fold (after Hero,
+// SceneUnfold, and SceneRail), so bundling it into the loader that blocks
+// the very first paint would delay the intro for no benefit; Manifesto
+// loads it itself once mounted. Filenames on disk are still hero-loop.*
+// (that's what they were converted as, before this moved out of Hero) —
+// only the exported names changed to match where they're actually used.
+export const MANIFESTO_LOOP_WEBM_SRC = "/media/video/hero-loop.webm";
+export const MANIFESTO_LOOP_MP4_SRC = "/media/video/hero-loop.mp4";
 
 export function getCriticalPreloadTargets(): PreloadTarget[] {
   return [
     { id: "hero-image", load: () => preloadImage(HERO_IMAGE_SRC) },
-    // Hero itself is video/image-agnostic right now — this doubles as the
-    // "hero video" slot. Swap to a video preload if Hero grows a <video>.
-    { id: "hero-media", load: () => preloadImage(FIRST_SEQUENCE_FRAME_SRC) },
     { id: "font-display", load: () => preloadFont("Clash Display", "600") },
     { id: "font-body", load: () => preloadFont("Space Grotesk", "400") },
   ];

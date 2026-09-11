@@ -161,11 +161,11 @@ app/                    routes (App Router). app/products/[id]/page.tsx is
 components/ui/          small shared primitives. Grain, TopNav, CartDrawer,
                         and CaptureModal are mounted globally in
                         app/layout.tsx, like Loader (see "Global commerce
-                        UI" below). ProductCard is different — not globally
-                        mounted, a plain reusable component (see "ShopGrid"
-                        below); it's here rather than components/sections/
-                        because it's reused across sections (ShopGrid,
-                        the PDP's RelatedProducts rail), not tied to one.
+                        UI" below). ProductCard and ProductImage are
+                        different — not globally mounted, plain reusable
+                        components (see "ShopGrid" below); they're here
+                        rather than components/sections/ because they're
+                        reused across sections, not tied to one.
 components/sections/    homepage/PDP section-level components. ProductOverview,
                         SpecStory, ProductFAQ, and RelatedProducts are the
                         PDP's — see "Product Detail Page" below.
@@ -480,6 +480,19 @@ element into that stack changes the rules.
   exception to "use the design tokens" — `--text-hero` stays as-is for any
   future use that isn't constrained by this specific photo's composition.
 
+**Hero briefly had a `<video>` background (first screen only, the
+editorial campaign loop) — removed on request.** It worked correctly
+(full-bleed, autoplaying) but reading the video cutting to the tall photo
+mid-screen didn't look good next to the "just the photo" version that
+came before, so it was pulled back out entirely — no video element, no
+related state, in `Hero.tsx` at all now. The loop itself wasn't wasted:
+it moved to `Manifesto` instead (see that section below), which doesn't
+have Hero's "must show the whole photo, uncropped" constraint. One
+lesson from the detour is worth keeping even though the Hero code that
+hit it is gone: seeing it explained here first is what caught it
+correctly, on the first try, when the video was rebuilt in `Manifesto` —
+see "Gotcha — replaced elements and `inset-x-0`" in that section.
+
 ### yPercent vs. a CSS transform class — do not reintroduce
 
 The wordmark's mask-reveal (`Hero`'s `<h1>`, animated via `gsap.set`/`.to`
@@ -584,6 +597,22 @@ reuse it (or its pattern) for `SceneRail`.
   how `Hero` and `Loader` already snap straight to end-state under reduced
   motion instead of animating a simplified version of the same journey.
 
+**Gotcha — frame resolution needs to match how big the canvas actually
+draws them, not just "reasonably sized."** The real onyx-hoodie frames
+were first extracted at 1080px wide (downscaled from the 1280×720 source);
+on screen they looked visibly soft. Root cause: `SceneUnfoldCanvas` draws
+every frame at the *canvas's* physical pixel size — viewport width × up to
+2 DPR, often 3000px+ — via `drawImage`'s built-in scaling, so a 1080px
+source was being stretched ~2.8×. Fixed two ways: re-extracted the frames
+at the source's *native* 1280×720 (dropping the downscale — there's a hard
+ceiling here, the source video itself is only 720p, so this narrows the
+upscale but can't eliminate it), and set `ctx.imageSmoothingQuality =
+"high"` in `SceneUnfoldCanvas.tsx` (defaults to `"low"` in some browsers,
+which made the unavoidable remaining upscale look worse than it needed
+to). If a future sequence still looks soft after both, the source footage
+itself needs to be higher resolution — no amount of extraction/rendering
+tuning manufactures detail the camera didn't capture.
+
 ## SceneRail (`components/sections/SceneRail.tsx` + `components/webgl/RailTransitionCanvas.tsx`)
 
 Horizontal-scroll product reveal — all 6 `products` in a row. Renders one of
@@ -651,8 +680,9 @@ a real structural difference.
 ## Manifesto (`components/sections/Manifesto.tsx`)
 
 Full-bleed near-black brand statement — no CTA, no product data, no GSAP.
-Deliberately the simplest section in the file: two lines of display type,
-a marquee, grain.
+Deliberately one of the simplest sections in the file: two lines of
+display type, a marquee, grain, and (now) a dim ambient video loop behind
+all of it.
 
 - **Line reveal is a real framer-motion `whileInView`**, not GSAP — the one
   place in this codebase scroll-driven animation isn't ScrollTrigger. Each
@@ -678,6 +708,39 @@ a marquee, grain.
   at higher opacity (0.14 vs 0.05) and section-scoped (`position: absolute`
   inside the section, which needs `position: relative`) rather than
   viewport-fixed.
+- **Ambient background video**: `MANIFESTO_LOOP_WEBM_SRC`/
+  `MANIFESTO_LOOP_MP4_SRC` (`lib/loader.ts`, webm-then-mp4 `<source>`s),
+  `autoPlay muted loop playsInline`, kept at `opacity-30` — this is the
+  same editorial campaign loop `Hero` tried first (see "Hero briefly had a
+  `<video>` background" in the Hero WebGL section above for why it moved).
+  It fits here specifically because Manifesto has no "must show the whole
+  frame uncropped" constraint the way Hero's rotation photo does, and the
+  brief already calls for this to read as "near-black... heavy grain" —
+  opacity-30 composited over the section's own `bg-bg` keeps it there;
+  don't brighten it just because a video is technically visible now, the
+  point is felt motion, not a bright video section. Skipped entirely under
+  `useReducedMotion()` (framer-motion's hook, matching the line-reveal
+  above, not a manual `matchMedia` check). `z-0`, not `-z-10` or unset —
+  deliberately avoiding the negative-z-index-on-`position:relative` bug
+  documented in the Hero WebGL section (that gotcha is about *negative*
+  values specifically; positive/zero values compared among direct siblings
+  don't have the same escape-the-section risk, so no `isolate` needed
+  here). Placed first in DOM, before `.grain-heavy` and the text — `.grain-
+  heavy`'s explicit `z-index: 10` always paints above it regardless of DOM
+  order; the text's explicit `z-0` ties with the video's own `z-0` and
+  falls back to DOM order, which is why the video needs to come first.
+
+**Gotcha — replaced elements (`<video>`, `<img>`) ignore `inset-x-0`'s
+implied width if you don't also set an explicit `width`.** Hit while
+building this: with only `absolute inset-0`, a *non-replaced* box (a
+plain `div`) stretches to fill automatically — every other `inset-0` in
+this codebase up to now was exactly that. `<video>`/`<img>` don't: with
+`width` at `auto`, they size to their own intrinsic aspect ratio instead
+(this loop's source is a portrait 1080×1920 clip), and `right`/the
+opposite edge is effectively ignored. Fix here is explicit `h-full
+w-full` alongside `object-cover`, not `inset-0` alone. Same root cause as
+the version of this bug hit (and fixed the same way) while this video was
+still living in `Hero` — see that section's note.
 
 **Gotcha — IntersectionObserver does not fire in this repo's browser
 automation tab.** While building this section, `whileInView` (and the
@@ -799,6 +862,22 @@ for unification — see "SceneRail" above).
   stub; a fourth copy for `ProductCard` was the point past which sharing it
   made more sense than repeating it a fourth time. All three call sites now
   import the one in `lib/utils.ts`.
+- **Broken images fall back to a flat placeholder, not the browser's
+  broken-image icon** — `components/ui/ProductImage.tsx`, a drop-in `<img>`
+  replacement (same props, `onError` swaps to a `bg-concrete` "Coming
+  Soon" panel). Only `onyx-hoodie` has real photography (see "Product
+  data" above); the other 5 seed products' image paths always 404, by
+  design, and a page full of literal broken-image icons reads as broken
+  rather than "real photography pending." Used in `ProductCard` (both
+  `<img>`s) and `SceneRail`'s `RailCard` (mobile/reduced-motion modes).
+  **Not used in `SceneRail`'s desktop pinned mode** — those backdrop/
+  cutout `<img>`s need direct DOM refs for GSAP's parallax tweens
+  (`backdropRefs`/`cutoutRefs`), and swapping to a fallback `<div>` on
+  error would either need `forwardRef` support or break the ref midway;
+  left as plain `<img>` there, so the desktop rail still shows a raw
+  broken-image icon for the 5 placeholder products. Not used on the PDP
+  (`ProductOverview`/`SpecStory`/`RelatedProducts`) either yet — same
+  gap, not yet extended there.
 
 ## Global commerce UI (`components/ui/TopNav.tsx`, `CartDrawer.tsx`, `CaptureModal.tsx`)
 

@@ -50,15 +50,6 @@ export type Product = {
 
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
-// SceneUnfold's scroll-scrubbed reveal frames — 4-digit, zero-padded,
-// matching the filenames SceneUnfold expects under /public/media/sequence/.
-function sequenceFrames(count: number): string[] {
-  return Array.from(
-    { length: count },
-    (_, i) => `/media/sequence/frame_${String(i + 1).padStart(4, "0")}.webp`
-  );
-}
-
 // SceneRail's cutout + backdrop plate, per product.
 function railImages(id: string): Pick<ProductImages, "cutout" | "backdrop"> {
   return {
@@ -99,9 +90,18 @@ export const products: Product[] = [
       // other not-yet-real path in this file.
       backdrop: "/media/images/products/onyx-hoodie/backdrop.jpg",
     },
-    // The featured product for the homepage's SceneUnfold reveal. Frames
-    // themselves aren't delivered yet either — see sequenceFrames()'s comment.
-    sequenceFrames: sequenceFrames(60),
+    // The featured product for the homepage's SceneUnfold reveal — 96 real,
+    // delivered frames (.jpg; the 5 placeholder products still just use an
+    // empty sequenceFrames: [] below, no generator function needed for
+    // that). These are the floating-garment segment extracted from the
+    // source rotation video (trimmed to the clean half, watermark removed
+    // via delogo — see CLAUDE.md's SceneUnfold section for the extraction
+    // details), written out explicitly for the same reason the images
+    // above are.
+    sequenceFrames: Array.from(
+      { length: 96 },
+      (_, i) => `/media/sequence/frame_${String(i + 1).padStart(4, "0")}.jpg`
+    ),
     description:
       "Heavyweight. Washed to a quiet, faded black. Built to be lived in.",
     specs: {

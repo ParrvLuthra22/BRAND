@@ -136,7 +136,7 @@ export function Hero() {
   }, [ready, scrolled]);
 
   return (
-    <section ref={rootRef} className="relative w-full overflow-hidden bg-bg">
+    <section ref={rootRef} className="relative isolate w-full overflow-hidden bg-bg">
       {/* Full photo at its own natural aspect ratio, filling the viewport
           width — NOT object-fit at all, on request: the whole standing
           figure should be full-size, not shrunk to fit inside one screen.
@@ -156,8 +156,15 @@ export function Hero() {
           // now, and its own canvas child is height:100% internally (see
           // HeroCanvas.tsx) — it needs a real, non-circular height to
           // resolve against, which only an explicit aspect-ratio (or a
-          // hardcoded height) can give it here.
-          className="relative -z-10 block aspect-[941/1672] w-full"
+          // hardcoded height) can give it here. No position/z-index — it's
+          // the first, plain-static child, which is already enough to sit
+          // behind the tint + overlay below (both position:absolute) per
+          // normal paint order. A negative z-index here was tried and
+          // actively broke this: on a position:relative element it creates
+          // its own stacking context, which — without the section's own
+          // `isolate` (added for exactly this) — could resolve against an
+          // ancestor far above Hero and render behind unrelated content.
+          className="block aspect-[941/1672] w-full"
           onError={handleWebGLError}
         />
       ) : (
@@ -168,13 +175,20 @@ export function Hero() {
           aria-hidden
           width={941}
           height={1672}
-          className="relative -z-10 block h-auto w-full"
+          className="block h-auto w-full"
         />
       )}
 
-      <div aria-hidden className="absolute inset-0 -z-[5] bg-bg/25" />
+      {/* No z-index on either of these — the image above is a plain static
+          element now (see its own comment), so DOM order alone already
+          puts these two (both position:absolute) on top of it, correctly.
+          A negative z-index here specifically would do the opposite of
+          what it looks like it does: negative-z positioned descendants
+          paint *before* normal static content, so it'd end up behind the
+          image instead of tinting it. */}
+      <div aria-hidden className="absolute inset-0 bg-bg/25" />
 
-      <div className="absolute inset-x-0 top-0 z-10 flex h-screen flex-col px-6 py-10 md:px-10">
+      <div className="absolute inset-x-0 top-0 flex h-screen flex-col px-6 py-10 md:px-10">
         {/* Grouped at the top, not vertically centered — hero.jpg's subject
             is centered with their head starting ~22% down the *image's*
             full height. At full-width sizing that's comfortably within the

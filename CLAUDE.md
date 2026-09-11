@@ -440,6 +440,32 @@ program with smaller `amt`/`ca` rather than duplicating it.
     confirmed-correct behavior (DOM-measurement-verified at a 1512×775
     window: section height ≈2660px, ≈3.4 screens, image fills full width)
     and `HeroCanvas`'s pre-existing, unchanged resize/sizing logic.
+
+**Gotcha — a negative `z-index` on a `position:relative` element is not
+the same as one on `position:absolute`, and swapping the image from
+absolute to static (iteration 3, above) broke exactly this.** The image/
+canvas has **no position and no z-index at all** now — plain `block`, first
+in DOM order. This was a real bug, not a stylistic choice: `-z-10` on a
+`position:relative` element makes *that element* establish a new stacking
+context (any positioned element gets one once its `z-index` is a number,
+not `auto`), and where that context resolves depends on ancestors —
+without `Hero`'s own `isolate` (added specifically for this), it could
+land behind unrelated content up the tree instead of just behind its own
+section, and did: the photo went fully invisible (confirmed by a real
+screenshot) while the text overlay rendered fine on top of it. The fix has
+two parts: the image itself dropped `relative -z-10` entirely — a plain
+static element already paints behind any `position:absolute` sibling that
+comes after it in DOM order, no z-index needed — and the tint/overlay
+divs after it dropped their own `-z-[5]`/`z-10` too, since a negative
+z-index on *them* would have had the opposite effect for the same reason
+(negative-z positioned descendants paint *before* normal static content,
+so a `-z-[5]` tint would end up behind the now-static image, not in front
+of it). `Hero`'s `isolate` stays as cheap insurance against this whole
+category of bug recurring, even with zero negative z-indices left inside
+it. If a future change to this section needs to re-introduce layered
+`position:absolute`/`-z-*` elements, remember: z-index ordering is only
+simple when everything being ordered is positioned — mixing a static
+element into that stack changes the rules.
 - **The wordmark's size didn't need to change again for this iteration** —
   it's still the bespoke vh-based clamp from the `object-contain` round,
   `text-[clamp(2.5rem,9vh,7rem)]` (not `--text-hero`, whose 18vw-driven max

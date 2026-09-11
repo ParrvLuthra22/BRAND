@@ -136,11 +136,28 @@ export function Hero() {
   }, [ready, scrolled]);
 
   return (
-    <section ref={rootRef} className="relative h-screen w-full overflow-hidden">
+    <section ref={rootRef} className="relative w-full overflow-hidden bg-bg">
+      {/* Full photo at its own natural aspect ratio, filling the viewport
+          width — NOT object-fit at all, on request: the whole standing
+          figure should be full-size, not shrunk to fit inside one screen.
+          hero.jpg is a tall portrait (941x1672), so at full width this
+          section runs to roughly 1.78x the viewport width in height —
+          around 2-3 screens of normal scroll depending on the viewport,
+          not a pinned/scroll-jacked reveal, just a tall image in normal
+          flow. The overlay content below is a separate absolutely-
+          positioned layer pinned to exactly the first screen, so hero copy
+          reads as "over the top of a tall photo," not stretched across
+          the whole scroll span. */}
       {useWebGL ? (
         <HeroCanvas
           src={HERO_IMAGE_SRC}
-          className="absolute inset-0 -z-10"
+          // aspect-[941/1672] (hero.jpg's real dimensions), not h-full off
+          // an -z-10 absolute box: this container is a normal-flow element
+          // now, and its own canvas child is height:100% internally (see
+          // HeroCanvas.tsx) — it needs a real, non-circular height to
+          // resolve against, which only an explicit aspect-ratio (or a
+          // hardcoded height) can give it here.
+          className="relative -z-10 block aspect-[941/1672] w-full"
           onError={handleWebGLError}
         />
       ) : (
@@ -149,31 +166,25 @@ export function Hero() {
           src={HERO_IMAGE_SRC}
           alt=""
           aria-hidden
-          // object-contain, not object-cover: the whole photo (head to
-          // shoes) must always be visible, never cropped. hero.jpg is a
-          // tall portrait, so on a wide/short viewport this letterboxes
-          // (empty bg-colored bars) left/right rather than filling edge to
-          // edge. See heroShaders.ts's containUv for the same treatment on
-          // the WebGL path.
-          className="absolute inset-0 -z-10 h-full w-full bg-bg object-contain"
+          width={941}
+          height={1672}
+          className="relative -z-10 block h-auto w-full"
         />
       )}
 
       <div aria-hidden className="absolute inset-0 -z-[5] bg-bg/25" />
 
-      <div className="relative z-10 flex h-full flex-col px-6 py-10 md:px-10">
+      <div className="absolute inset-x-0 top-0 z-10 flex h-screen flex-col px-6 py-10 md:px-10">
         {/* Grouped at the top, not vertically centered — hero.jpg's subject
-            is centered with their head starting ~22% down the frame. With
-            object-contain the full image always fits inside the viewport
-            height (that's the axis contain matches on any wider-than-image
-            viewport, which is nearly all of them — see Hero's <img> comment
-            and heroShaders.ts's containUv), so that ~22% figure holds
-            regardless of viewport width. The wordmark's size is a bespoke
-            vh-based clamp rather than the --text-hero token — text-hero's
-            18vw-driven max (20rem) badly overflows a ~20%-of-viewport-height
-            budget on any normal desktop width, guaranteeing overlap with the
-            face; sizing off vh instead keeps it inside the empty band above
-            the head regardless of how wide the viewport is. */}
+            is centered with their head starting ~22% down the *image's*
+            full height. At full-width sizing that's comfortably within the
+            first screen for any realistic viewport (a wider viewport makes
+            the whole image taller too, so the head's pixel position only
+            ever grows, never shrinks below the screen). The wordmark's
+            size is a bespoke vh-based clamp rather than the --text-hero
+            token — text-hero's 18vw-driven max (20rem) would still overflow
+            a reasonable headroom budget on normal desktop widths; sizing
+            off vh keeps it well inside the space above the head. */}
         <div className="flex flex-col gap-2">
           <span ref={eyebrowRef} className="mono-label text-muted opacity-0">
             Brand / SS26

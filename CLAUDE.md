@@ -392,57 +392,67 @@ program with smaller `amt`/`ca` rather than duplicating it.
   the real photo (tall portrait, subject centered, head starting ~22% down
   the frame, empty background above it). Used as both the WebGL plane's
   texture and the `<img>` fallback's `src`.
-- **The hero photo is `object-fit: contain`, never cropped — the whole
-  person (head to shoes) must always be visible.** This went through two
-  iterations while wiring `hero.jpg` in:
-  1. First pass used `object-cover` (fills the viewport edge to edge,
-     cropping whatever doesn't fit) with the crop anchored to the top of
-     the image rather than centered — `hero.jpg`'s tall aspect ratio
-     (~0.56) means a *centered* cover-crop actively cuts the subject's head
-     off on any wide/short viewport (most laptop windows), so top-anchoring
-     was a real bug fix at the time.
-  2. That was still a crop, though — on request, cover was replaced
-     entirely with **contain**: the full image always fits inside the
-     viewport, letterboxed (flat `--color-bg` bars) on whichever axis has
-     room to spare. On a wide/short viewport (most desktops) that's
-     left/right bars, image height-matched, full body visible; on a
-     tall/narrow one (mobile) it's top/bottom bars, image width-matched.
-     Nothing is ever cropped either way.
-  - `<img>` fallback (`Hero.tsx`): `object-contain` plus an explicit
-    `bg-bg` on the `<img>` itself, so the letterbox bars paint the right
-    color rather than whatever's behind the element.
-  - WebGL: `heroShaders.ts`'s `coverUv()` was replaced with `containUv()` —
-    same cover-vs-contain relationship as the CSS property, scaling the
-    image *down* to fit rather than *up* to fill. `containUv()` can return
-    a uv outside `[0,1]` (the letterboxed region); `main()` checks for that
-    first and paints a flat `LETTERBOX` color (matching `--color-bg`)
-    instead of sampling the texture there — the displacement/chromatic-
-    aberration/grain effect only ever runs on actual image pixels.
+- **The hero photo renders at full resolution, natural aspect ratio, no
+  crop and no shrink-to-fit — the section itself is however tall that
+  makes it, not `h-screen`.** Went through three iterations while wiring
+  `hero.jpg` in, each on request as the previous one turned out not to be
+  what was wanted:
+  1. `object-cover` (fills one viewport edge to edge, cropping whatever
+     doesn't fit), crop anchored to the image's top rather than centered —
+     `hero.jpg`'s tall aspect ratio (~0.56) means a *centered* cover-crop
+     actively cuts the subject's head off on any wide/short viewport (most
+     laptop windows), so this was a real bug fix at the time.
+  2. `object-contain` (the full image fits inside one viewport,
+     letterboxed on whichever axis has room to spare) — no longer cropped,
+     but still shrunk down to fit one screen, which on a wide viewport made
+     the figure quite small.
+  3. **Current**: no `object-fit` at all. The image/canvas is a normal
+     block-flow element sized `w-full` with `h-auto` (or, for the WebGL
+     path, an explicit `aspect-[941/1672]` — see below) — at full viewport
+     width, `hero.jpg`'s tall crop renders far taller than one screen
+     (roughly 1.78× the viewport width), so the section runs to several
+     screens of ordinary scroll. Not a pin/scroll-jack — Hero has no
+     ScrollTrigger at all — just a tall image in normal flow that you
+     scroll past like any other content. The overlay copy (eyebrow,
+     wordmark, mood line, scroll cue) is a *separate* layer,
+     `absolute inset-x-0 top-0 h-screen`, pinned to exactly the first
+     screen regardless of how tall the image section is, so it reads as
+     "copy over the top of a tall photo," not stretched across the whole
+     scroll span.
+  - `<img>` fallback (`Hero.tsx`): explicit `width={941} height={1672}`
+    attributes (hero.jpg's real dimensions, avoids layout shift before it
+    loads) plus `className="... h-auto w-full"`.
+  - WebGL: `HeroCanvas`'s wrapping container gets `aspect-[941/1672] w-full`
+    instead of the old `absolute inset-0` (which needed an already-sized,
+    `h-screen` ancestor) — `HeroCanvas` itself reads its container's actual
+    size via `ResizeObserver` (unchanged), so giving it a correctly-shaped,
+    non-circular box is all that's needed. Because the container's aspect
+    ratio now always matches the image's own (both are 941:1672, by
+    construction), `heroShaders.ts`'s `containUv()` (added for iteration 2,
+    kept unchanged for iteration 3) degrades to an identity mapping — no
+    cropping *or* letterboxing math actually does anything anymore, which
+    is correct: there's nothing left to fit, the container already is the
+    image's shape.
   - **Still not independently visually verified on the WebGL path** (see
     the IntersectionObserver/rAF gotchas elsewhere in this doc — WebGL
-    didn't activate in this browser-automation tab either time this was
-    built/changed, same root cause). Reasoned from the `<img>` fallback's
-    confirmed-correct behavior (screenshot-verified at a 2000×1150 window:
-    full standing figure, letterboxed left/right) and the same aspect-ratio
-    math applied to both paths. If a real browser ever shows the WebGL
-    hero cropping or stretching, check `containUv()`'s scale-factor branch
-    (`rS > rI` vs. not) against the actual viewport/image aspect ratio
-    first.
-- **The wordmark's size and position changed for the same reason**: it used
-  to be vertically centered via `justify-between` at the full `--text-hero`
-  token scale (`clamp(4rem, 18vw, 20rem)`) — on real desktop widths that
-  clamp maxes out around 270–320px tall, which overflows any reasonable
-  "empty space above the head" budget and guarantees overlap regardless of
-  the image-fit approach. It's now grouped with the eyebrow at the *top* of
-  the flex column (`mt-auto` pushes the mood-line/scroll-cue group to the
-  bottom instead), sized with a bespoke vh-based clamp,
-  `text-[clamp(2.5rem,9vh,7rem)]` — vh, not `--text-hero`'s vw, because the
-  available headroom is a function of viewport *height*: with `contain`,
-  height is the axis the image actually fills on any wider-than-image
-  viewport (nearly all of them), so the ~22%-down head position holds
-  regardless of viewport width. This is a deliberate, narrow exception to
-  "use the design tokens" — `--text-hero` stays as-is for any future use
-  that isn't constrained by this specific photo's composition.
+    didn't activate in this browser-automation tab through any of the three
+    iterations, same root cause). Reasoned from the `<img>` fallback's
+    confirmed-correct behavior (DOM-measurement-verified at a 1512×775
+    window: section height ≈2660px, ≈3.4 screens, image fills full width)
+    and `HeroCanvas`'s pre-existing, unchanged resize/sizing logic.
+- **The wordmark's size didn't need to change again for this iteration** —
+  it's still the bespoke vh-based clamp from the `object-contain` round,
+  `text-[clamp(2.5rem,9vh,7rem)]` (not `--text-hero`, whose 18vw-driven max
+  of 20rem would still overflow a sane headroom budget on desktop widths).
+  The *reasoning* changed, though: headroom is no longer "the image fills
+  viewport height" (that was `contain`-specific) but "the image fills
+  viewport width, and a wider viewport makes the whole image — head
+  position included — proportionally taller too," so the ~22%-down head
+  position converts to more headroom pixels on a wider screen, never less.
+  Verified this still holds at 1512×775 (head lands ~585px down, comfortably
+  past the wordmark's few-hundred-px height). This is a deliberate, narrow
+  exception to "use the design tokens" — `--text-hero` stays as-is for any
+  future use that isn't constrained by this specific photo's composition.
 
 ### yPercent vs. a CSS transform class — do not reintroduce
 

@@ -6,15 +6,22 @@ import { products } from "@/data/products";
 import { useCartStore } from "@/lib/cart-store";
 import { cn, formatPrice } from "@/lib/utils";
 
-const FEATURED = products.find((product) => product.id === "hoodie-blackout")!;
+const FEATURED = products.find((product) => product.id === "onyx-hoodie")!;
 
-const DETAILS: {
-  key: keyof NonNullable<(typeof FEATURED)["images"]["details"]>;
-  label: string;
-}[] = [
-  { key: "fabric", label: "Fabric" },
-  { key: "print", label: "Print" },
-  { key: "stitch", label: "Stitch" },
+// The two real non-primary shots beyond main/alt — see data/products.ts's
+// onyx-hoodie gallery order (main, alt, detail-cuff, flatlay). Only 2 real
+// detail images exist for this product (not the old 3-key fabric/print/
+// stitch scheme), so this is a plain src/label list, not keyed off
+// images.details (which no seed product populates — see its type comment).
+const DETAILS: { src: string; label: string }[] = [
+  { src: FEATURED.images.gallery[2], label: "Cuff" },
+  { src: FEATURED.images.gallery[3], label: "Flatlay" },
+];
+
+const SPEC_STORY: { label: string; key: keyof typeof FEATURED.specs }[] = [
+  { label: "Fabric", key: "fabric" },
+  { label: "Cut", key: "cut" },
+  { label: "Print", key: "print" },
 ];
 
 export function TheDrop() {
@@ -61,9 +68,6 @@ export function TheDrop() {
     addItem(product, selectedSize);
     openCart();
   }
-
-  if (!product.images.details) return null;
-  const details = product.images.details;
 
   return (
     <section className="bg-bg">
@@ -131,8 +135,22 @@ export function TheDrop() {
             </button>
           </div>
 
-          {DETAILS.map(({ key, label }, i) => (
-            <div key={key} className="relative aspect-[4/5] overflow-hidden">
+          {/* Fabric / Cut / Print, straight from specs — a lighter-weight
+              text-only teaser for the same story the PDP's SpecStory tells
+              in full (see that component). No dedicated imagery for this,
+              deliberately: the two real detail shots below already carry
+              the visual weight. */}
+          <div className="grid grid-cols-1 gap-6 border-t border-line px-6 py-10 sm:grid-cols-3 md:px-10">
+            {SPEC_STORY.map(({ label, key }) => (
+              <div key={key} className="flex flex-col gap-2">
+                <span className="mono-label text-acid">{label}</span>
+                <p className="text-body text-paper">{product.specs[key]}</p>
+              </div>
+            ))}
+          </div>
+
+          {DETAILS.map(({ src, label }, i) => (
+            <div key={label} className="relative aspect-[4/5] overflow-hidden">
               <div
                 ref={(el) => {
                   maskRefs.current[i] = el;
@@ -146,7 +164,7 @@ export function TheDrop() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={details[key]}
+                  src={src}
                   alt={`${product.name} — ${label} detail`}
                   className="h-full w-full object-cover"
                 />

@@ -10,22 +10,30 @@ const MAX_QUANTITY = 10;
 
 type Shot = { src: string; label: string };
 
-// Every product has main/alt/gallery; only the featured product also has
-// details (fabric/print/stitch) — see data/products.ts's "Product data"
-// note. Falling back gracefully here means every PDP gets a real thumbnail
-// rail, not just hoodie-blackout's.
+// Every product has main/alt/gallery; details (fabric/print/stitch) is an
+// unpopulated-for-now optional field — see data/products.ts's type comment.
+// Deduped by src: onyx-hoodie's gallery deliberately repeats main/alt ahead
+// of its two real extra shots (see its gallery order in data/products.ts),
+// so building [main, alt, ...gallery] naively would show the same two
+// thumbnails twice. Every other seed product's gallery has no overlap with
+// main/alt, so the dedup is a no-op for them.
 function galleryFor(product: Product): Shot[] {
   const shots: Shot[] = [
     { src: product.images.main, label: "Front" },
     { src: product.images.alt, label: "Back" },
   ];
+  const seen = new Set(shots.map((shot) => shot.src));
   product.images.gallery.forEach((src, i) => {
+    if (seen.has(src)) return;
+    seen.add(src);
     shots.push({ src, label: `Look ${i + 1}` });
   });
   if (product.images.details) {
-    shots.push({ src: product.images.details.fabric, label: "Fabric" });
-    shots.push({ src: product.images.details.print, label: "Print" });
-    shots.push({ src: product.images.details.stitch, label: "Stitch" });
+    for (const [key, src] of Object.entries(product.images.details)) {
+      if (seen.has(src)) continue;
+      seen.add(src);
+      shots.push({ src, label: key[0].toUpperCase() + key.slice(1) });
+    }
   }
   return shots;
 }

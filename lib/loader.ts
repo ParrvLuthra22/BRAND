@@ -55,10 +55,12 @@ function preloadFont(family: string, weight: string): Promise<void> {
 // Real assets the Hero needs before its intro can start. Missing files
 // (e.g. Clash Display's woff2s, or media not dropped in yet) still resolve
 // via the onerror/catch branches above — a 404 must never hang the loader.
-export const HERO_IMAGE_SRC = "/media/images/hero/hero-main.jpg";
+export const HERO_IMAGE_SRC = "/media/images/hero/hero.jpg";
 // Matches data/products.ts's sequenceFrames(60)[0] for the SceneUnfold
 // reveal — kept as a literal here rather than importing data/products.ts,
-// since this file's preload contract is intentionally data-agnostic.
+// since this file's preload contract is intentionally data-agnostic. Still
+// a placeholder path (no real sequence frames delivered yet), same as the
+// data file's own sequenceFrames() call.
 export const FIRST_SEQUENCE_FRAME_SRC = "/media/sequence/frame_0001.webp";
 
 export function getCriticalPreloadTargets(): PreloadTarget[] {

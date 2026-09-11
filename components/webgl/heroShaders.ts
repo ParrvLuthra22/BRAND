@@ -35,11 +35,20 @@ float noise(vec2 p){
   return mix(a,b,u.x) + (c-a)*u.y*(1.0-u.x) + (d-b)*u.x*u.y;
 }
 
-// cover-fit uv so the image fills without stretching
+// cover-fit uv so the image fills without stretching. Horizontal cropping
+// stays centered; vertical cropping is anchored to the top of the source
+// image instead (cropping from the bottom) — hero.jpg is a tall portrait
+// with the subject's head and the wordmark's headroom both near the top,
+// so on a wide/short viewport (s.y > 1, needs to crop top/bottom) a plain
+// center-crop can cut the head clean off. Assumes v=1 is the image's top
+// edge (OGL's default flipY:true texture convention). When s.y == 1 (no
+// vertical crop needed) this is a no-op, identical to a center-crop.
 vec2 coverUv(vec2 uv, vec2 res, vec2 img){
   float rS = res.x/res.y, rI = img.x/img.y;
   vec2 s = (rS < rI) ? vec2(rI/rS, 1.0) : vec2(1.0, rS/rI);
-  return (uv - 0.5) / s + 0.5;
+  float x = (uv.x - 0.5) / s.x + 0.5;
+  float y = uv.y / s.y + (1.0 - 1.0 / s.y);
+  return vec2(x, y);
 }
 
 void main() {

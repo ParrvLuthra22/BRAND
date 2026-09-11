@@ -211,7 +211,7 @@ type Product = {
     main: string; alt: string; gallery: string[];
     cutout: string;   // transparent PNG, garment isolated — SceneRail's floating cutout
     backdrop: string; // full-bleed plate behind it in SceneRail
-    details?: { fabric: string; print: string; stitch: string }; // TheDrop's mask-wipe shots
+    details?: { fabric: string; print: string; stitch: string }; // optional, see below
   };
   sequenceFrames?: string[]; // scroll-scrubbed sequence frame paths, if any
   description: string;
@@ -219,13 +219,35 @@ type Product = {
 };
 ```
 
-Seeded with 6 placeholder products (2 hoodies, 4 tees). Image paths point at
-`/media/images/<id>/...` — those files don't exist yet, so every `<img>`
-across the site (`ShopGrid`/`ProductCard` included) renders a broken-image
-icon for now, same as `TheDrop` and `SceneRail`; swap in real photography
-and `<Image>` components without changing the data shape. `cutout`/`backdrop`
-are populated for all 6 (via the `railImages(id)` helper) since all 6 appear
-in `SceneRail`.
+Seeded with 6 products: **`onyx-hoodie` is the one real product** (real
+photography, the featured product everywhere — see below); the other 5
+(1 hoodie, 4 tees) are still placeholders, image paths pointing at
+`/media/images/<id>/...` files that don't exist yet, so every `<img>` for
+them (`ShopGrid`/`ProductCard` included) renders a broken-image icon, same
+as `TheDrop` and `SceneRail`; swap in real photography and `<Image>`
+components without changing the data shape. `cutout`/`backdrop` are
+populated for all 6 (via the `railImages(id)` helper for the 5 placeholders;
+written out explicitly for `onyx-hoodie`, see its own comment) since all 6
+appear in `SceneRail`.
+
+**`onyx-hoodie`'s real assets live under
+`/public/media/images/products/onyx-hoodie/`** — note the extra `products/`
+segment, a different shape than the placeholders' `/media/images/<id>/...`
+convention. Its image paths are written out as literals in `data/products.ts`
+rather than through `railImages()`, which still targets the old,
+`products/`-less shape for the 5 placeholders (deliberately — don't "fix"
+that helper to match, the placeholders are untouched on purpose). If more
+real product photography arrives, drop it under
+`/media/images/products/<id>/...` and follow `onyx-hoodie`'s explicit-literal
+pattern, not `railImages()`'s.
+
+`onyx-hoodie`'s `gallery` deliberately repeats `main`/`alt` ahead of its two
+real extra shots (`detail-cuff.jpg`, `flatlay.jpg`) — `[main, alt,
+detail-cuff, flatlay]` — matching "PDP gallery: images.gallery in order" as
+given. `ProductOverview`'s `galleryFor()` dedupes by `src` so this doesn't
+produce duplicate PDP thumbnails (see "Product Detail Page" below). It has
+no `backdrop` (not delivered) — a placeholder path in the same real-asset
+folder, 404s gracefully like everything else not-yet-real.
 
 `soldOut` is `true` for exactly one seed product (`hoodie-concrete`) so
 `ProductCard`'s disabled state has something to render against — every
@@ -233,29 +255,32 @@ other product is implicitly in stock (field absent, not `false`).
 
 `hook`/`useCase` are unconditionally required (unlike the optional fields
 above) — every product needs PDP copy, there's no "featured product only"
-carve-out here the way there is for `sequenceFrames`/`details`. Both are
-hand-written per product, matching that product's `moodLine` tone (see the
-seed data) — not derived from other fields, since a punchy one-liner isn't
-something you can template.
+carve-out here the way there is for `sequenceFrames`. Both are hand-written
+per product, matching that product's `moodLine` tone (see the seed data) —
+not derived from other fields, since a punchy one-liner isn't something you
+can template. `onyx-hoodie`'s task brief didn't specify these two (they're
+this codebase's own addition, from before real assets existed) — written to
+match its "washed/quiet" mood rather than the louder pieces' tone.
 
-`hoodie-blackout` is the one product with `sequenceFrames` **and** `details`
-populated — it's the featured product for both `SceneUnfold`'s reveal and
-`TheDrop` (see below). `details` follows the same "only the product that
-actually needs it gets the field populated" precedent as `sequenceFrames`
-(optional on the type, `detailImages(id)` helper) rather than `cutout`/
-`backdrop`'s "populate for all 6" precedent — pick whichever matches whether
-the new field is used by something that iterates all products (like
-`SceneRail`) or something that features just one (like `SceneUnfold`,
-`TheDrop`).
+**`details` is currently unpopulated for every seed product** — it used to
+carry `hoodie-blackout`'s (the old placeholder, now replaced by
+`onyx-hoodie`) 3-key fabric/print/stitch shots, which `TheDrop`'s detail
+panels and `SpecStory`'s `chapterImage()` both read. `TheDrop` no longer
+depends on it at all (see "TheDrop" below); `SpecStory` still checks it via
+optional chaining and falls through to `gallery`/`main`/`alt` when absent,
+which is now the path every product actually takes. Left in the type as a
+future affordance, not dead weight to clean up reflexively — see its own
+type comment.
 
+`onyx-hoodie` is the one product with `sequenceFrames` populated — it's the
+featured product for both `SceneUnfold`'s reveal and `TheDrop` (see below).
 `sequenceFrames` is 60 paths at `/media/sequence/frame_0001.webp` …
 `frame_0060.webp`, generated by the `sequenceFrames(count)` helper in that
-file. None of those files exist yet either;
-`SceneUnfold`'s preloader resolves on 404 the same way image preloading does
-elsewhere in this codebase. If you add real photography, 60 frames at real
-production quality is a lot of payload for an eager preload — consider
-trimming the count (30–40 is usually enough for a smooth scrub) once real
-assets replace these.
+file. **None of those frame files exist yet** — real photography exists for
+`onyx-hoodie`'s stills, but not yet for the scroll-scrubbed sequence, so
+`SceneUnfold`'s preloader still resolves every frame on 404, same as before.
+If you add the real frames, 60 at production quality is a lot of payload for
+an eager preload — consider trimming to 30–40 once they exist.
 
 ## Homepage
 
@@ -363,6 +388,49 @@ program with smaller `amt`/`ca` rather than duplicating it.
   with the same SSR-safe-default pattern as the loader/reduced-motion checks
   elsewhere: `useState(false)` (matches server + first client render, so no
   hydration mismatch) upgraded synchronously before paint.
+- **`HERO_IMAGE_SRC`** (`lib/loader.ts`) is `/media/images/hero/hero.jpg` —
+  the real photo (tall portrait, subject centered, head starting ~22% down
+  the frame, empty background above it). Used as both the WebGL plane's
+  texture and the `<img>` fallback's `src`.
+- **Cover-fit is top-anchored, not centered — a real bug, found and fixed
+  while wiring this photo in.** `hero.jpg`'s aspect ratio (~0.56, tall) means
+  a naive center-crop `object-cover`/`coverUv` looks fine on *tall* viewports
+  (mobile) but is actively wrong on any *wide/short* one — which is most
+  laptop/desktop browser windows (a plain 1512×775 window already triggers
+  it). On those, cropping to fill width overshoots height so much that a
+  symmetric center-crop cuts the subject's head off entirely, taking the
+  wordmark's headroom with it. Confirmed via screenshot at 1512×775: the
+  `<img>` fallback showed pure torso, no head, before this fix.
+  - `<img>` fallback: `object-top` (`Hero.tsx`), not the default
+    `object-center` — crops from the bottom (legs) instead, keeping the
+    head and headroom in frame.
+  - WebGL: `heroShaders.ts`'s `coverUv()` now anchors its vertical axis to
+    the image's top (`v = uv.y/s.y + (1 - 1/s.y)`, vs. the old symmetric
+    `(uv.y-0.5)/s.y+0.5`) — same effect as `object-top`, kept only on the
+    y-axis (horizontal cropping is still centered, correct for a
+    center-framed subject). Assumes OGL's default `flipY: true` texture
+    convention (v=1 is the image's top edge), consistent with the render
+    already being right-side-up. **Not independently visually verified**
+    (see the IntersectionObserver/rAF gotchas elsewhere in this doc — WebGL
+    didn't even activate in this browser-automation tab to test against,
+    same root cause); reasoned from the `<img>` fallback's confirmed-correct
+    fix and OGL's documented texture defaults. If a real browser ever shows
+    the WebGL hero cropping the head with `hero.jpg`, suspect the flipY
+    assumption first.
+- **The wordmark's size and position changed for the same reason**: it used
+  to be vertically centered via `justify-between` at the full `--text-hero`
+  token scale (`clamp(4rem, 18vw, 20rem)`) — on real desktop widths that
+  clamp maxes out around 270–320px tall, which overflows any reasonable
+  "empty space above the head" budget and guarantees overlap regardless of
+  the cover-fit fix above. It's now grouped with the eyebrow at the *top*
+  of the flex column (`mt-auto` pushes the mood-line/scroll-cue group to the
+  bottom instead), sized with a bespoke vh-based clamp,
+  `text-[clamp(2.5rem,9vh,7rem)]` — vh, not `--text-hero`'s vw, because the
+  available headroom is a function of viewport *height* (cover-fit preserves
+  the image's own proportions vertically once top-anchored), not width. This
+  is a deliberate, narrow exception to "use the design tokens" — `--text-hero`
+  stays as-is for any future use that isn't constrained by this specific
+  photo's composition.
 
 ### yPercent vs. a CSS transform class — do not reintroduce
 
@@ -408,8 +476,11 @@ is a generic "draw an image sequence to canvas, scrubbed by an external
 progress getter" component with no GSAP/ScrollTrigger knowledge of its own —
 reuse it (or its pattern) for `SceneRail`.
 
-- **Data source**: `hoodie-blackout` in `data/products.ts` is the featured
-  product — see "Product data" above for its `sequenceFrames`.
+- **Data source**: `onyx-hoodie` in `data/products.ts` is the featured
+  product (found dynamically via `products.find(p =>
+  p.sequenceFrames?.length)` — not a hardcoded id, so this needs no code
+  change when the featured product changes, only the data) — see "Product
+  data" above for its `sequenceFrames`.
 - **Preload gates the pin**: `preloadSequence()` kicks off on mount (so for
   a homepage section it's normally long finished before the user scrolls
   this far) and only once every frame has loaded (or 404'd — see below)
@@ -579,25 +650,36 @@ testing in this environment, suspect the tab before suspecting the code.
 ## TheDrop (`components/sections/TheDrop.tsx`)
 
 The featured-product hero section — `FEATURED` is hardcoded to
-`products.find(p => p.id === "hoodie-blackout")`, the one product with
-`images.details` populated (see "Product data" above). Two-column grid:
+`products.find(p => p.id === "onyx-hoodie")`, the real product (see
+"Product data" above). Two-column grid:
 
-- **Sticky product image**: left column is `md:sticky md:top-0 md:h-screen`
-  holding `product.images.main` — plain CSS sticky, works because Lenis
-  scrolls the real document (not a transform-virtualized one), same reason
-  native `position: sticky` already works cleanly elsewhere in this
-  codebase.
-- **Detail-shot mask wipes are GSAP ScrollTrigger, one-shot per panel**:
-  each of the three `DETAILS` panels (`fabric`/`print`/`stitch`) gets its
-  own ref div with `clipPath: inset(0% 0% 100% 0%)` (fully masked from the
-  bottom) and a `ScrollTrigger.create({ trigger: el, start: "top 85%",
-  once: true, onEnter: () => gsap.to(el, { clipPath: "inset(0% 0% 0% 0%)",
-  ...EASE_OUT-eased }) })` — reveals once, the first time it's scrolled
-  into view; never re-masks or scrubs. Reduced motion skips the effect
-  entirely and renders the final `inset(0% 0% 0% 0%)` clip immediately
-  (checked via `matchMedia` in a pre-paint `useLayoutEffect`, the codebase's
-  usual manual pattern here — unlike `Manifesto`, since this is GSAP not
-  framer-motion).
+- **Sticky product image**: left column is
+  `md:sticky md:top-20 md:h-[calc(100vh-5rem)]` holding `product.images.main`
+  — plain CSS sticky, works because Lenis scrolls the real document (not a
+  transform-virtualized one), same reason native `position: sticky` already
+  works cleanly elsewhere in this codebase. The `top-20`/`calc(...)` offset
+  (not `top-0`/`h-screen`) exists because of `TopNav` — see "Global commerce
+  UI"'s "Sticky columns vs. TopNav" note.
+- **Detail-shot mask wipes are GSAP ScrollTrigger, one-shot per panel** —
+  same mechanism as always (`clipPath: inset(0% 0% 100% 0%)` seeded inline,
+  `ScrollTrigger.create({ trigger: el, start: "top 85%", once: true, onEnter:
+  () => gsap.to(el, { clipPath: "inset(0% 0% 0% 0%)", ...EASE_OUT-eased })
+  })`, reduced motion skips straight to the revealed clip) — but **now only
+  2 panels, not 3**: `DETAILS` is a plain `{ src, label }[]` reading
+  `product.images.gallery[2]`/`[3]` (`onyx-hoodie`'s real `detail-cuff.jpg`/
+  `flatlay.jpg`) directly, not keyed off `images.details.{fabric,print,
+  stitch}` the way it used to be — that field is unpopulated for every seed
+  product now (see "Product data" above). Don't reintroduce a 3-key
+  `images.details` dependency here; if a future featured product needs a
+  third panel, just add a third `{ src, label }` entry.
+- **"Fabric / Cut / Print" spec-as-story is a separate, new block** — a
+  plain 3-column (`sm:grid-cols-3`) text row reading straight from
+  `product.specs.{fabric,cut,print}`, sitting between the purchase info and
+  the two detail panels. No dedicated imagery of its own (deliberately —
+  the two real detail shots right below already carry the visual weight);
+  this is TheDrop's lighter, homepage-teaser echo of the PDP's `SpecStory`
+  (full chapters, its own imagery, mask-wipe reveals — see "Product Detail
+  Page" below), not a duplicate of it.
 - **Price block**: sale price (`text-sale`) and MRP (`text-muted
   line-through`) render side by side when `product.priceSale` is set,
   falling back to a single plain price otherwise; "Incl. of all taxes"
@@ -608,13 +690,9 @@ The featured-product hero section — `FEATURED` is hardcoded to
   Cart is clicked.
 - **Add to Cart → cart store → drawer**: `handleAddToCart()` calls
   `addItem(product, selectedSize)` then `open()`, both straight off
-  `useCartStore` (`lib/cart-store.ts`, pre-existing) — no local cart state
-  of its own. This is also what made `components/ui/CartDrawer.tsx`
-  necessary: the store already had `isOpen`/`open`/`close`, but nothing
-  rendered it. `CartDrawer` is mounted globally in `app/layout.tsx` (see
-  "Homepage" above), reads `lines` from the store, cross-references
-  `products` by `line.productId` for name/image/price, and intentionally
-  has no Checkout button — out of scope until a real checkout flow exists.
+  `useCartStore` (`lib/cart-store.ts`) — no local cart state of its own,
+  same shared `CartDrawer` destination as `ProductCard`/`ProductOverview`
+  (see "Global commerce UI" below for the drawer itself).
 
 ## ShopGrid (`components/sections/ShopGrid.tsx`) + ProductCard (`components/ui/ProductCard.tsx`)
 
@@ -765,10 +843,14 @@ PDP renders its own copy — see "Homepage" above).
 **ProductOverview** (`components/sections/ProductOverview.tsx`) — sticky
 gallery + purchase panel, the PDP's above-the-fold block.
 - **Gallery images**: a local `galleryFor(product)` builds `[main, alt,
-  ...gallery, ...(details && [fabric, print, stitch])]` — every product
-  gets a real thumbnail rail this way (`gallery`/`main`/`alt` exist on all
-  6), not just `hoodie-blackout`, which is the only one with `details`
-  populated (see "Product data" above).
+  ...gallery, ...(details && [fabric, print, stitch])]`, **deduped by
+  `src`** — every product gets a real thumbnail rail this way
+  (`gallery`/`main`/`alt` exist on all 6). The dedup specifically matters
+  for `onyx-hoodie`: its `gallery` deliberately repeats `main`/`alt` ahead
+  of its two real extra shots (see "Product data" above), so the naive
+  concatenation would show the same two thumbnails twice without it. Every
+  other seed product's `gallery` has no overlap with `main`/`alt`, so the
+  dedup is a no-op for them.
 - **Lightbox** is a colocated local component (tightly coupled to the
   gallery's `activeIndex` state, not reused elsewhere, so it isn't a
   `components/ui/` primitive) — fullscreen `motion.div`, Escape/←/→ keyboard
@@ -818,9 +900,11 @@ Also Like", a plain **server** component (no `"use client"`, no scroll
 reveal of its own) — `ProductCard` already carries its own client
 interactivity, and PDP's fast/clean mandate is better served by shipping
 zero extra client JS for this section than by adding a staggered entrance.
-`relatedTo()` sorts same-category (by `id` prefix, `"hoodie"`/`"tee"` —
-there's no dedicated category field, the prefix is good enough for this)
-before other products, caps at 4. Rendered as a plain native
+`relatedTo()` sorts same-category before other products, caps at 4. No
+dedicated category field — `categoryOf()` checks whether `"hoodie"` appears
+*anywhere* in the id, not a prefix split (`id.split("-")[0]`): `onyx-hoodie`
+doesn't start with `"hoodie-"`, so a prefix check would've put it in a
+category of its own, matching nothing. Rendered as a plain native
 `overflow-x-auto snap-x` rail, not a pinned/carousel one — no scroll-
 jacking on PDP, same rule `SceneRail`'s mobile mode already follows.
 

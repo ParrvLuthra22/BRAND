@@ -6,10 +6,17 @@ export type ProductImages = {
   cutout: string;
   /** Full-bleed backdrop plate behind the cutout in SceneRail. */
   backdrop: string;
-  /** TheDrop's mask-wipe detail shots — only the featured product needs these. */
+  /**
+   * Optional extra mask-wipe detail shots, keyed by spec. Currently unset
+   * for every seed product — TheDrop's featured-product detail panels now
+   * pull straight from `gallery` instead (see TheDrop.tsx), and SpecStory's
+   * chapterImage() falls through to `gallery`/`main`/`alt` when this is
+   * absent. Left in the type as a future affordance for a product that gets
+   * dedicated per-spec photography.
+   */
   details?: {
-    fabric: string; // macro
-    print: string; // close-up
+    fabric: string;
+    print: string;
     stitch: string;
   };
 };
@@ -60,45 +67,47 @@ function railImages(id: string): Pick<ProductImages, "cutout" | "backdrop"> {
   };
 }
 
-// TheDrop's mask-wipe detail shots, per product.
-function detailImages(id: string): NonNullable<ProductImages["details"]> {
-  return {
-    fabric: `/media/images/${id}/detail-fabric.jpg`,
-    print: `/media/images/${id}/detail-print.jpg`,
-    stitch: `/media/images/${id}/detail-stitch.jpg`,
-  };
-}
-
 export const products: Product[] = [
   {
-    id: "hoodie-blackout",
-    name: "Blackout Hoodie",
-    moodLine: "HEAVY. CROPPED. RELENTLESS.",
-    priceMRP: 12800,
-    priceSale: 9600,
-    hook: "Weighs on you like a decision you haven't made yet.",
-    useCase: "For 4am walks home and every room you want to leave without saying bye.",
-    colorway: "Jet Black",
-    sizes: SIZES,
+    // The one real product — assets live under /public/media/images/products/
+    // onyx-hoodie/, a different directory shape than the other 5 placeholders'
+    // /media/images/<id>/... convention (no "products/" segment), so its
+    // paths are written out explicitly below rather than through
+    // railImages()/detailImages(). Don't "fix" those helpers to match; the
+    // other 5 are deliberately untouched placeholders (see their own paths).
+    id: "onyx-hoodie",
+    name: "ONYX HOODIE",
+    moodLine: "WASHED. HEAVY. QUIET.",
+    priceMRP: 4999,
+    priceSale: 3499,
+    hook: "The loudest thing in the room says nothing at all.",
+    useCase: "For the days you've got nothing to prove and nowhere to be.",
+    colorway: "Washed Black",
+    sizes: ["S", "M", "L", "XL"],
     images: {
-      main: "/media/images/hoodie-blackout/main.jpg",
-      alt: "/media/images/hoodie-blackout/alt.jpg",
+      main: "/media/images/products/onyx-hoodie/main.jpg",
+      alt: "/media/images/products/onyx-hoodie/alt.jpg",
       gallery: [
-        "/media/images/hoodie-blackout/gallery-1.jpg",
-        "/media/images/hoodie-blackout/gallery-2.jpg",
-        "/media/images/hoodie-blackout/gallery-3.jpg",
+        "/media/images/products/onyx-hoodie/main.jpg",
+        "/media/images/products/onyx-hoodie/alt.jpg",
+        "/media/images/products/onyx-hoodie/detail-cuff.jpg",
+        "/media/images/products/onyx-hoodie/flatlay.jpg",
       ],
-      ...railImages("hoodie-blackout"),
-      details: detailImages("hoodie-blackout"),
+      cutout: "/media/images/products/onyx-hoodie/cutout.png",
+      // Not delivered yet (only SceneRail needs this) — placeholder path in
+      // the same real-asset folder, same 404-gracefully treatment as every
+      // other not-yet-real path in this file.
+      backdrop: "/media/images/products/onyx-hoodie/backdrop.jpg",
     },
-    // The featured product for the homepage's SceneUnfold reveal.
+    // The featured product for the homepage's SceneUnfold reveal. Frames
+    // themselves aren't delivered yet either — see sequenceFrames()'s comment.
     sequenceFrames: sequenceFrames(60),
     description:
-      "Oversized fit built from 480gsm double-lined fleece. Dropped shoulders, boxy body, raw-cut hem.",
+      "Heavyweight. Washed to a quiet, faded black. Built to be lived in.",
     specs: {
-      fabric: "480gsm brushed cotton fleece",
-      cut: "Oversized, dropped shoulder",
-      print: "Puff-print chest hit + back placement",
+      fabric: "480 GSM brushed-back French terry, garment-dyed washed black.",
+      cut: "Oversized boxy fit, dropped shoulder, cropped hem.",
+      print: "Blank canvas — tonal woven label at the left hem, no front or back print.",
     },
   },
   {

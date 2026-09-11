@@ -1,0 +1,1237 @@
+{
+  "findings": {
+    "loader": {
+      "played": true,
+      "timedOut": false
+    },
+    "fonts": {
+      "faces": [
+        "Clash Display 400 [error]",
+        "Clash Display 500 [unloaded]",
+        "Clash Display 600 [error]",
+        "Clash Display 700 [unloaded]",
+        "Space Grotesk 400 [unloaded]",
+        "Space Grotesk 400 [unloaded]",
+        "Space Grotesk 400 [loaded]",
+        "Space Grotesk 500 [unloaded]",
+        "Space Grotesk 500 [unloaded]",
+        "Space Grotesk 500 [unloaded]",
+        "Space Grotesk 700 [unloaded]",
+        "Space Grotesk 700 [unloaded]",
+        "Space Grotesk 700 [unloaded]",
+        "Space Grotesk Fallback normal [unloaded]",
+        "Space Mono 400 [unloaded]",
+        "Space Mono 400 [unloaded]",
+        "Space Mono 400 [loaded]",
+        "Space Mono 700 [unloaded]",
+        "Space Mono 700 [unloaded]",
+        "Space Mono 700 [unloaded]",
+        "Space Mono Fallback normal [unloaded]",
+        "__nextjs-Geist 400 600 [unloaded]",
+        "__nextjs-Geist Mono 400 600 [unloaded]",
+        "__nextjs-Geist 400 600 [unloaded]",
+        "__nextjs-Geist Mono 400 600 [unloaded]"
+      ],
+      "clashDisplayCheck": false,
+      "spaceGroteskCheck": true,
+      "h1ComputedFontFamily": "\"Clash Display\", sans-serif"
+    },
+    "desktopScrollShots": [
+      "desktop_0000vh.png",
+      "desktop_0100vh.png",
+      "desktop_0200vh.png",
+      "desktop_0300vh.png",
+      "desktop_0400vh.png",
+      "desktop_0500vh.png",
+      "desktop_0600vh.png",
+      "desktop_0700vh.png",
+      "desktop_0800vh.png",
+      "desktop_0900vh.png",
+      "desktop_1000vh.png",
+      "desktop_1100vh.png",
+      "desktop_1200vh.png",
+      "desktop_1300vh.png",
+      "desktop_1400vh.png"
+    ],
+    "desktopScrollHeightPx": 12897,
+    "domAudit": {
+      "hero": {
+        "hasWordmark": true,
+        "hasEyebrow": true,
+        "hasMoodline": true,
+        "hasScrollCue": true,
+        "hasCanvas": false,
+        "hasFallbackImg": true,
+        "hasVideo": false,
+        "rect": {
+          "w": 1440,
+          "h": 2559
+        }
+      },
+      "sceneUnfold": {
+        "found": true,
+        "showsLoadingStub": false,
+        "hasCanvas": true,
+        "rect": {
+          "w": 1440,
+          "h": 900
+        }
+      },
+      "sceneRail": {
+        "exploreLinkCount": 4,
+        "hasCanvasOverlay": true
+      },
+      "lookbook": {
+        "found": false
+      },
+      "manifesto": {
+        "hasLine1": true,
+        "hasLine2": true,
+        "hasMarquee": true,
+        "hasVideo": true
+      },
+      "theDrop": {
+        "hasLatestDropEyebrow": true,
+        "featuredName": "ONYX",
+        "hasAddToCart": true,
+        "detailPanelLabels": [
+          "Cuff",
+          "Flatlay"
+        ]
+      },
+      "shopGrid": {
+        "found": true,
+        "heading": "Shop the Drop",
+        "cardCount": 4,
+        "cardNames": [
+          "ONYX",
+          "BONE",
+          "VENOM",
+          "MONO"
+        ],
+        "hasIndexNumbers": false,
+        "cardHeights": [
+          614
+        ]
+      },
+      "footer": {
+        "found": true,
+        "hasJoinCult": true,
+        "hasCopyright": true,
+        "topLevelChildCount": 1,
+        "hasPolicyLinks": 0,
+        "hasWhatsApp": false
+      },
+      "global": {
+        "cursorCandidate": false,
+        "cartDrawerMounted": false,
+        "captureModalMounted": false,
+        "topNavFound": true,
+        "topNavVisibleNow": false
+      },
+      "bodyScrollWidth": 1440,
+      "bodyClientWidth": 1440,
+      "totalSections": 6
+    },
+    "desktopFullPageScreenshotFailed": "Error: page.screenshot: Protocol error (Page.captureScreenshot): Unable to capture screenshot",
+    "mobileScrollShots": [
+      "mobile_0000vh.png",
+      "mobile_0100vh.png",
+      "mobile_0200vh.png",
+      "mobile_0300vh.png",
+      "mobile_0400vh.png",
+      "mobile_0500vh.png",
+      "mobile_0600vh.png",
+      "mobile_0700vh.png",
+      "mobile_0800vh.png"
+    ],
+    "mobileScrollHeightPx": 7584,
+    "mobileHorizontalOverflow": null,
+    "pdp_venom-hoodie_status": 200,
+    "pdp_onyx-hoodie_status": 200
+  },
+  "diagnostics": {
+    "consoleMessages": [
+      {
+        "page": "desktop-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "desktop-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "desktop-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "desktop-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "desktop-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "desktop-home",
+        "type": "warning",
+        "text": "null\nVertex Shader\n1: \n2: attribute vec2 uv;\n3: attribute vec2 position;\n4: varying vec2 vUv;\n5: void main() {\n6:   vUv = uv;\n7:   gl_Position = vec4(position, 0.0, 1.0);\n8: }\n9: "
+      },
+      {
+        "page": "desktop-home",
+        "type": "warning",
+        "text": "null\nFragment Shader\n1: \n2: precision highp float;\n3: \n4: uniform sampler2D uTexture;\n5: uniform vec2  uMouse;      // lerped mouse, -0.5..0.5\n6: uniform float uTime;\n7: uniform float uHover;      // 0..1, eases in on pointer enter\n8: uniform vec2  uResolution;\n9: uniform vec2  uImageSize;  // for contain-fit\n10: varying vec2 vUv;\n11: \n12: // hero.jpg's near-black background (matches --color-bg, #0A0A0A) — the flat\n13: // fill for the letterbox bars containUv leaves outside the image.\n14: const vec3 LETTERBOX = vec3(0.0392);\n15: \n16: // cheap 2D noise\n17: float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\n18: float noise(vec2 p){\n19:   vec2 i = floor(p), f = fract(p);\n20:   float a = hash(i), b = hash(i + vec2(1.0,0.0));\n21:   float c = hash(i + vec2(0.0,1.0)), d = hash(i + vec2(1.0,1.0));\n22:   vec2 u = f*f*(3.0-2.0*f);\n23:   return mix(a,b,u.x) + (c-a)*u.y*(1.0-u.x) + (d-b)*u.x*u.y;\n24: }\n25: \n26: // contain-fit uv — the whole image must always be visible, never cropped,\n27: // matching CSS object-fit: contain (see Hero.tsx's <img> fallback). Scales\n28: // down to fit inside the viewport on whichever axis has room to spare;\n29: // uv on that axis lands outside [0,1] in the resulting letterbox — main()\n30: // checks for that and paints LETTERBOX flat instead of sampling the texture.\n31: vec2 containUv(vec2 uv, vec2 res, vec2 img){\n32:   float rS = res.x/res.y, rI = img.x/img.y;\n33:   vec2 scale = (rS > rI) ? vec2(rS/rI, 1.0) : vec2(1.0, rI/rS);\n34:   return (uv - 0.5) * scale + 0.5;\n35: }\n36: \n37: void main() {\n38:   vec2 uv = containUv(vUv, uResolution, uImageSize);\n39: \n40:   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {\n41:     gl_FragColor = vec4(LETTERBOX, 1.0);\n42:     return;\n43:   }\n44: \n45:   // slow ambient flow + mouse-driven displacement\n46:   float n = noise(uv * 3.0 + uTime * 0.05);\n47:   vec2 disp = vec2(n - 0.5);\n48:   disp += uMouse * 0.06 * uHover;          // pointer push\n49:   float amt = 0.012 + 0.02 * uHover;       // stronger on hover\n50:   vec2 duv = uv + disp * amt;\n51: \n52:   // chromatic aberration — split RGB along displacement\n53:   float ca = 0.004 + 0.006 * uHover;\n54:   float r = texture2D(uTexture, duv + disp * ca).r;\n55:   float g = texture2D(uTexture, duv).g;\n56:   float b = texture2D(uTexture, duv - disp * ca).b;\n57:   vec3 col = vec3(r, g, b);\n58: \n59:   // film grain\n60:   float grain = hash(vUv * uResolution + uTime) * 0.06 - 0.03;\n61:   col += grain;\n62: \n63:   // subtle vignette to seat it in the dark bg\n64:   float vig = smoothstep(1.2, 0.3, length(vUv - 0.5));\n65:   col *= mix(0.85, 1.0, vig);\n66: \n67:   gl_FragColor = vec4(col, 1.0);\n68: }\n69: "
+      },
+      {
+        "page": "desktop-home",
+        "type": "warning",
+        "text": "null"
+      },
+      {
+        "page": "desktop-home",
+        "type": "warning",
+        "text": "[.WebGL-0x10400441a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+      },
+      {
+        "page": "desktop-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "desktop-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "desktop-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "desktop-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "desktop-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "desktop-home",
+        "type": "warning",
+        "text": "WebGL: CONTEXT_LOST_WEBGL: loseContext: context lost"
+      },
+      {
+        "page": "mobile-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "mobile-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "mobile-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "mobile-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "mobile-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "mobile-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "mobile-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "mobile-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "mobile-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "mobile-home",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "pdp",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "pdp",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "pdp",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      },
+      {
+        "page": "pdp",
+        "type": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      }
+    ],
+    "pageErrors": [],
+    "failedRequests": [
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Regular.woff2",
+        "failure": "net::ERR_ABORTED"
+      },
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Semibold.woff2",
+        "failure": "net::ERR_ABORTED"
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Regular.woff2",
+        "failure": "net::ERR_ABORTED"
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Semibold.woff2",
+        "failure": "net::ERR_ABORTED"
+      },
+      {
+        "page": "pdp",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Regular.woff2",
+        "failure": "net::ERR_ABORTED"
+      },
+      {
+        "page": "pdp",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Semibold.woff2",
+        "failure": "net::ERR_ABORTED"
+      },
+      {
+        "page": "pdp",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Regular.woff2",
+        "failure": "net::ERR_ABORTED"
+      },
+      {
+        "page": "pdp",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Semibold.woff2",
+        "failure": "net::ERR_ABORTED"
+      }
+    ],
+    "http4xx5xx": [
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/media/images/products/onyx-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/media/images/products/bone-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/media/images/products/venom-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/media/images/products/mono-tee/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Regular.woff2",
+        "status": 404
+      },
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Semibold.woff2",
+        "status": 404
+      },
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/media/images/products/onyx-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/media/images/products/bone-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/media/images/products/venom-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "desktop-home",
+        "url": "http://localhost:3000/media/images/products/mono-tee/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/media/images/products/onyx-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/media/images/products/bone-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/media/images/products/venom-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/media/images/products/mono-tee/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Regular.woff2",
+        "status": 404
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Semibold.woff2",
+        "status": 404
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/media/images/products/onyx-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/media/images/products/venom-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/media/images/products/bone-hoodie/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "mobile-home",
+        "url": "http://localhost:3000/media/images/products/mono-tee/backdrop.jpg",
+        "status": 404
+      },
+      {
+        "page": "pdp",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Regular.woff2",
+        "status": 404
+      },
+      {
+        "page": "pdp",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Semibold.woff2",
+        "status": 404
+      },
+      {
+        "page": "pdp",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Regular.woff2",
+        "status": 404
+      },
+      {
+        "page": "pdp",
+        "url": "http://localhost:3000/fonts/ClashDisplay-Semibold.woff2",
+        "status": 404
+      }
+    ],
+    "sequenceFrames": [
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0003.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0004.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0001.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0002.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0005.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0006.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0007.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0008.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0009.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0010.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0011.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0012.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0013.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0014.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0015.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0016.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0017.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0018.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0019.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0020.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0021.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0022.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0023.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0024.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0025.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0026.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0028.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0027.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0029.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0030.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0031.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0032.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0034.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0033.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0035.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0036.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0037.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0039.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0038.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0040.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0041.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0043.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0042.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0045.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0044.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0046.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0047.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0048.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0049.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0050.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0051.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0052.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0053.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0054.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0055.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0056.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0057.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0058.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0059.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0060.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0061.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0062.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0063.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0064.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0065.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0066.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0068.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0067.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0069.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0070.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0071.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0072.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0073.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0074.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0075.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0076.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0077.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0078.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0079.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0080.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0081.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0082.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0083.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0084.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0086.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0085.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0087.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0088.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0089.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0090.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0091.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0092.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0093.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0094.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0096.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0095.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0003.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0001.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0004.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0002.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0005.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0006.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0007.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0009.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0008.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0010.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0011.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0013.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0012.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0014.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0015.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0016.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0017.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0018.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0019.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0020.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0021.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0022.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0023.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0025.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0026.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0024.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0027.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0028.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0030.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0032.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0031.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0029.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0033.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0035.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0034.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0037.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0036.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0038.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0039.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0040.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0041.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0042.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0043.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0044.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0045.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0046.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0047.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0048.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0049.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0050.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0051.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0052.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0053.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0054.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0055.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0056.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0057.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0058.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0059.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0060.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0061.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0064.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0062.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0063.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0065.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0066.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0067.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0068.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0070.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0069.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0071.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0072.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0073.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0074.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0075.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0076.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0077.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0078.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0079.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0080.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0082.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0083.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0084.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0081.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0085.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0086.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0087.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0088.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0089.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0090.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0091.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0092.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0095.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0094.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0093.jpg",
+        "status": 200
+      },
+      {
+        "url": "http://localhost:3000/media/sequence/frame_0096.jpg",
+        "status": 200
+      }
+    ]
+  }
+}

@@ -149,14 +149,13 @@ export function Hero() {
           src={HERO_IMAGE_SRC}
           alt=""
           aria-hidden
-          // object-top, not the default center: hero.jpg is a tall portrait
-          // with empty headroom above the subject's head near the very top
-          // of the frame — on a wide/short viewport, object-cover has to
-          // crop vertically, and centered cropping can cut the head off
-          // entirely. Cropping from the bottom instead keeps the head (and
-          // the wordmark's headroom above it) in frame. See heroShaders.ts's
-          // coverUv for the same fix on the WebGL path.
-          className="absolute inset-0 -z-10 h-full w-full object-cover object-top"
+          // object-contain, not object-cover: the whole photo (head to
+          // shoes) must always be visible, never cropped. hero.jpg is a
+          // tall portrait, so on a wide/short viewport this letterboxes
+          // (empty bg-colored bars) left/right rather than filling edge to
+          // edge. See heroShaders.ts's containUv for the same treatment on
+          // the WebGL path.
+          className="absolute inset-0 -z-10 h-full w-full bg-bg object-contain"
         />
       )}
 
@@ -164,16 +163,17 @@ export function Hero() {
 
       <div className="relative z-10 flex h-full flex-col px-6 py-10 md:px-10">
         {/* Grouped at the top, not vertically centered — hero.jpg's subject
-            is centered with their head starting ~22% down the frame, and
-            object-cover preserves that full vertical extent at essentially
-            every realistic viewport ratio (this image is narrow/tall enough
-            that cropping only ever eats the sides, not the top/bottom). The
-            wordmark's size is a bespoke vh-based clamp rather than the
-            --text-hero token — text-hero's 18vw-driven max (20rem) badly
-            overflows a ~20%-of-viewport-height budget on any normal desktop
-            width, guaranteeing overlap with the face; sizing off vh instead
-            keeps it inside the empty band above the head regardless of how
-            wide the viewport is. */}
+            is centered with their head starting ~22% down the frame. With
+            object-contain the full image always fits inside the viewport
+            height (that's the axis contain matches on any wider-than-image
+            viewport, which is nearly all of them — see Hero's <img> comment
+            and heroShaders.ts's containUv), so that ~22% figure holds
+            regardless of viewport width. The wordmark's size is a bespoke
+            vh-based clamp rather than the --text-hero token — text-hero's
+            18vw-driven max (20rem) badly overflows a ~20%-of-viewport-height
+            budget on any normal desktop width, guaranteeing overlap with the
+            face; sizing off vh instead keeps it inside the empty band above
+            the head regardless of how wide the viewport is. */}
         <div className="flex flex-col gap-2">
           <span ref={eyebrowRef} className="mono-label text-muted opacity-0">
             Brand / SS26

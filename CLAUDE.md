@@ -392,45 +392,57 @@ program with smaller `amt`/`ca` rather than duplicating it.
   the real photo (tall portrait, subject centered, head starting ~22% down
   the frame, empty background above it). Used as both the WebGL plane's
   texture and the `<img>` fallback's `src`.
-- **Cover-fit is top-anchored, not centered — a real bug, found and fixed
-  while wiring this photo in.** `hero.jpg`'s aspect ratio (~0.56, tall) means
-  a naive center-crop `object-cover`/`coverUv` looks fine on *tall* viewports
-  (mobile) but is actively wrong on any *wide/short* one — which is most
-  laptop/desktop browser windows (a plain 1512×775 window already triggers
-  it). On those, cropping to fill width overshoots height so much that a
-  symmetric center-crop cuts the subject's head off entirely, taking the
-  wordmark's headroom with it. Confirmed via screenshot at 1512×775: the
-  `<img>` fallback showed pure torso, no head, before this fix.
-  - `<img>` fallback: `object-top` (`Hero.tsx`), not the default
-    `object-center` — crops from the bottom (legs) instead, keeping the
-    head and headroom in frame.
-  - WebGL: `heroShaders.ts`'s `coverUv()` now anchors its vertical axis to
-    the image's top (`v = uv.y/s.y + (1 - 1/s.y)`, vs. the old symmetric
-    `(uv.y-0.5)/s.y+0.5`) — same effect as `object-top`, kept only on the
-    y-axis (horizontal cropping is still centered, correct for a
-    center-framed subject). Assumes OGL's default `flipY: true` texture
-    convention (v=1 is the image's top edge), consistent with the render
-    already being right-side-up. **Not independently visually verified**
-    (see the IntersectionObserver/rAF gotchas elsewhere in this doc — WebGL
-    didn't even activate in this browser-automation tab to test against,
-    same root cause); reasoned from the `<img>` fallback's confirmed-correct
-    fix and OGL's documented texture defaults. If a real browser ever shows
-    the WebGL hero cropping the head with `hero.jpg`, suspect the flipY
-    assumption first.
+- **The hero photo is `object-fit: contain`, never cropped — the whole
+  person (head to shoes) must always be visible.** This went through two
+  iterations while wiring `hero.jpg` in:
+  1. First pass used `object-cover` (fills the viewport edge to edge,
+     cropping whatever doesn't fit) with the crop anchored to the top of
+     the image rather than centered — `hero.jpg`'s tall aspect ratio
+     (~0.56) means a *centered* cover-crop actively cuts the subject's head
+     off on any wide/short viewport (most laptop windows), so top-anchoring
+     was a real bug fix at the time.
+  2. That was still a crop, though — on request, cover was replaced
+     entirely with **contain**: the full image always fits inside the
+     viewport, letterboxed (flat `--color-bg` bars) on whichever axis has
+     room to spare. On a wide/short viewport (most desktops) that's
+     left/right bars, image height-matched, full body visible; on a
+     tall/narrow one (mobile) it's top/bottom bars, image width-matched.
+     Nothing is ever cropped either way.
+  - `<img>` fallback (`Hero.tsx`): `object-contain` plus an explicit
+    `bg-bg` on the `<img>` itself, so the letterbox bars paint the right
+    color rather than whatever's behind the element.
+  - WebGL: `heroShaders.ts`'s `coverUv()` was replaced with `containUv()` —
+    same cover-vs-contain relationship as the CSS property, scaling the
+    image *down* to fit rather than *up* to fill. `containUv()` can return
+    a uv outside `[0,1]` (the letterboxed region); `main()` checks for that
+    first and paints a flat `LETTERBOX` color (matching `--color-bg`)
+    instead of sampling the texture there — the displacement/chromatic-
+    aberration/grain effect only ever runs on actual image pixels.
+  - **Still not independently visually verified on the WebGL path** (see
+    the IntersectionObserver/rAF gotchas elsewhere in this doc — WebGL
+    didn't activate in this browser-automation tab either time this was
+    built/changed, same root cause). Reasoned from the `<img>` fallback's
+    confirmed-correct behavior (screenshot-verified at a 2000×1150 window:
+    full standing figure, letterboxed left/right) and the same aspect-ratio
+    math applied to both paths. If a real browser ever shows the WebGL
+    hero cropping or stretching, check `containUv()`'s scale-factor branch
+    (`rS > rI` vs. not) against the actual viewport/image aspect ratio
+    first.
 - **The wordmark's size and position changed for the same reason**: it used
   to be vertically centered via `justify-between` at the full `--text-hero`
   token scale (`clamp(4rem, 18vw, 20rem)`) — on real desktop widths that
   clamp maxes out around 270–320px tall, which overflows any reasonable
   "empty space above the head" budget and guarantees overlap regardless of
-  the cover-fit fix above. It's now grouped with the eyebrow at the *top*
-  of the flex column (`mt-auto` pushes the mood-line/scroll-cue group to the
+  the image-fit approach. It's now grouped with the eyebrow at the *top* of
+  the flex column (`mt-auto` pushes the mood-line/scroll-cue group to the
   bottom instead), sized with a bespoke vh-based clamp,
   `text-[clamp(2.5rem,9vh,7rem)]` — vh, not `--text-hero`'s vw, because the
-  available headroom is a function of viewport *height* (cover-fit preserves
-  the image's own proportions vertically once top-anchored), not width. This
-  is a deliberate, narrow exception to "use the design tokens" — `--text-hero`
-  stays as-is for any future use that isn't constrained by this specific
-  photo's composition.
+  available headroom is a function of viewport *height*: with `contain`,
+  height is the axis the image actually fills on any wider-than-image
+  viewport (nearly all of them), so the ~22%-down head position holds
+  regardless of viewport width. This is a deliberate, narrow exception to
+  "use the design tokens" — `--text-hero` stays as-is for any future use
+  that isn't constrained by this specific photo's composition.
 
 ### yPercent vs. a CSS transform class — do not reintroduce
 

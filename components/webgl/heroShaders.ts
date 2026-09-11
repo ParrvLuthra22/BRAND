@@ -22,8 +22,12 @@ uniform vec2  uMouse;      // lerped mouse, -0.5..0.5
 uniform float uTime;
 uniform float uHover;      // 0..1, eases in on pointer enter
 uniform vec2  uResolution;
-uniform vec2  uImageSize;  // for cover-fit
+uniform vec2  uImageSize;  // for contain-fit
 varying vec2 vUv;
+
+// hero.jpg's near-black background (matches --color-bg, #0A0A0A) — the flat
+// fill for the letterbox bars containUv leaves outside the image.
+const vec3 LETTERBOX = vec3(0.0392);
 
 // cheap 2D noise
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -35,24 +39,24 @@ float noise(vec2 p){
   return mix(a,b,u.x) + (c-a)*u.y*(1.0-u.x) + (d-b)*u.x*u.y;
 }
 
-// cover-fit uv so the image fills without stretching. Horizontal cropping
-// stays centered; vertical cropping is anchored to the top of the source
-// image instead (cropping from the bottom) — hero.jpg is a tall portrait
-// with the subject's head and the wordmark's headroom both near the top,
-// so on a wide/short viewport (s.y > 1, needs to crop top/bottom) a plain
-// center-crop can cut the head clean off. Assumes v=1 is the image's top
-// edge (OGL's default flipY:true texture convention). When s.y == 1 (no
-// vertical crop needed) this is a no-op, identical to a center-crop.
-vec2 coverUv(vec2 uv, vec2 res, vec2 img){
+// contain-fit uv — the whole image must always be visible, never cropped,
+// matching CSS object-fit: contain (see Hero.tsx's <img> fallback). Scales
+// down to fit inside the viewport on whichever axis has room to spare;
+// uv on that axis lands outside [0,1] in the resulting letterbox — main()
+// checks for that and paints LETTERBOX flat instead of sampling the texture.
+vec2 containUv(vec2 uv, vec2 res, vec2 img){
   float rS = res.x/res.y, rI = img.x/img.y;
-  vec2 s = (rS < rI) ? vec2(rI/rS, 1.0) : vec2(1.0, rS/rI);
-  float x = (uv.x - 0.5) / s.x + 0.5;
-  float y = uv.y / s.y + (1.0 - 1.0 / s.y);
-  return vec2(x, y);
+  vec2 scale = (rS > rI) ? vec2(rS/rI, 1.0) : vec2(1.0, rI/rS);
+  return (uv - 0.5) * scale + 0.5;
 }
 
 void main() {
-  vec2 uv = coverUv(vUv, uResolution, uImageSize);
+  vec2 uv = containUv(vUv, uResolution, uImageSize);
+
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+    gl_FragColor = vec4(LETTERBOX, 1.0);
+    return;
+  }
 
   // slow ambient flow + mouse-driven displacement
   float n = noise(uv * 3.0 + uTime * 0.05);

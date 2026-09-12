@@ -15,6 +15,23 @@ const CUTOUT_PARALLAX = 6; // %
 const EXPLORE_LINK_CLASS =
   "mono-label shrink-0 rounded-full border border-acid px-5 py-2 text-acid transition-colors duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-acid hover:text-bg";
 
+// Per-product ambient tone, standing in for real backdrop photography —
+// `images.backdrop` 404s gracefully for all 4 products right now (none has
+// been shot yet), which otherwise leaves the cutout floating in a flat black
+// void. This is the Tier-2 "per-product backdrop tone shift" brief (cold
+// graphite ONYX/MONO, warm light BONE, faint acid-green glow VENOM),
+// implemented as a radial-gradient wash since there's no plate to tint yet —
+// swap to a real photographic tint once backdrop.jpg exists per product,
+// this map can go away then.
+const RAIL_TONE: Record<string, string> = {
+  "onyx-hoodie": "radial-gradient(ellipse at center, #242424 0%, #0A0A0A 65%)",
+  "bone-hoodie":
+    "radial-gradient(ellipse at center, rgba(242,240,235,0.18) 0%, #0A0A0A 65%)",
+  "venom-hoodie":
+    "radial-gradient(ellipse at center, rgba(198,255,0,0.16) 0%, #0A0A0A 65%)",
+  "mono-tee": "radial-gradient(ellipse at center, #242424 0%, #0A0A0A 65%)",
+};
+
 function preloadImages(urls: string[]): Promise<HTMLImageElement[]> {
   return Promise.all(
     urls.map(
@@ -161,6 +178,11 @@ export function SceneRail() {
             key={product.id}
             className="relative h-full w-screen shrink-0 overflow-hidden"
           >
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{ background: RAIL_TONE[product.id] }}
+            />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               ref={(el) => {
@@ -231,7 +253,19 @@ function RailCard({
   return (
     <div className={className}>
       <div className="relative aspect-[3/4] overflow-hidden bg-concrete">
-        <ProductImage
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{ background: RAIL_TONE[product.id] }}
+        />
+        {/* Plain <img>, not ProductImage — this is a decorative, aria-hidden
+            backdrop plate, not a product photo. ProductImage's "Coming Soon"
+            fallback is right for a missing garment shot but wrong here: it'd
+            paint an opaque box over the RAIL_TONE glow above, right where
+            we're deliberately using color to stand in for the not-yet-shot
+            plate. Same reasoning as the desktop track's backdrop <img>. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={product.images.backdrop}
           alt=""
           aria-hidden

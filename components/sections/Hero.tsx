@@ -25,12 +25,215 @@ function isMobileLite(): boolean {
   );
 }
 
+// Same inset(top% 0% bottom% 0%) shape as Loader.tsx's randomGlitchBand(),
+// duplicated rather than shared — Loader's is tuned for a small text glyph,
+// this one's tuned for a full-bleed photo (wider bands read better at that
+// scale).
+function randomGlitchBand() {
+  const top = gsap.utils.random(0, 80);
+  const height = gsap.utils.random(6, 22);
+  const bottom = Math.max(0, 100 - top - height);
+  return `inset(${top}% 0% ${bottom}% 0%)`;
+}
+
+const GLITCH_SLICE_COUNT = 4;
+const GLITCH_STREAK_COUNT = 3;
+const STREAK_COLORS = ["#00ff9d", "#00c8ff", "#ff2ec4"];
+
+/**
+ * Periodic glitch burst over the hero photo: real per-channel RGB splitting
+ * (an SVG filter — feColorMatrix isolates R/G/B, feOffset shifts R and B in
+ * opposite directions, feBlend screens them back together — CSS alone can't
+ * isolate true colour channels, only an SVG filter can), animated by
+ * tweening the feOffset primitives' dx/dy attributes directly via GSAP's
+ * `attr` tween (the same mechanism HeroCanvas uses to tween GLSL uniforms —
+ * "GSAP can tween any plain object property," here that's an SVG attribute
+ * instead of a uniform). Layered with torn/displaced horizontal slices and
+ * a few colour-streak flashes for the "corrupted broadcast" look, all
+ * clipped to the photo's own box (`absolute inset-0` inside Hero's section,
+ * same box the img/canvas renders into).
+ *
+ * Cycles rest -> burst -> rest: a several-hundred-ms burst of rapid stutter
+ * frames every few seconds, snapping back to the clean, sharp photo between
+ * bursts. Constant distortion would fight the "read the photo" job Hero's
+ * image has to do; a burst that resolves back to normal reads as a designed
+ * flourish instead. `src` reuses the exact URL already loaded for the photo/
+ * canvas texture, so this hits the browser cache, not the network.
+ */
+function HeroGlitch({ src }: { src: string }) {
+  const redOffsetRef = useRef<SVGFEOffsetElement>(null);
+  const blueOffsetRef = useRef<SVGFEOffsetElement>(null);
+  const rgbLayerRef = useRef<HTMLDivElement>(null);
+  const sliceRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const streakRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    let timeoutId: number;
+
+    function reset() {
+      gsap.set(redOffsetRef.current, { attr: { dx: 0, dy: 0 } });
+      gsap.set(blueOffsetRef.current, { attr: { dx: 0, dy: 0 } });
+      gsap.set(rgbLayerRef.current, { autoAlpha: 0 });
+      gsap.set(sliceRefs.current, { autoAlpha: 0, x: 0 });
+      gsap.set(streakRefs.current, { autoAlpha: 0, scaleX: 0 });
+    }
+
+    function burst() {
+      const tl = gsap.timeline({
+        onComplete: () => {
+          reset();
+          timeoutId = window.setTimeout(burst, gsap.utils.random(700, 1600));
+        },
+      });
+      const stutters = Math.round(gsap.utils.random(12, 18));
+
+      for (let i = 0; i < stutters; i++) {
+        tl.set(rgbLayerRef.current, { autoAlpha: gsap.utils.random(0.75, 1) })
+          .set(
+            redOffsetRef.current,
+            { attr: { dx: gsap.utils.random(-36, 36), dy: gsap.utils.random(-8, 8) } },
+            "<"
+          )
+          .set(
+            blueOffsetRef.current,
+            { attr: { dx: gsap.utils.random(-36, 36), dy: gsap.utils.random(-8, 8) } },
+            "<"
+          )
+          .set(
+            sliceRefs.current,
+            {
+              autoAlpha: () => (gsap.utils.random(0, 1) > 0.25 ? 1 : 0),
+              x: () => gsap.utils.random(-40, 40),
+              clipPath: () => randomGlitchBand(),
+            },
+            "<"
+          )
+          .set(
+            streakRefs.current,
+            {
+              autoAlpha: () => (gsap.utils.random(0, 1) > 0.4 ? 0.9 : 0),
+              top: () => `${gsap.utils.random(5, 90)}%`,
+              scaleX: 1,
+            },
+            "<"
+          )
+          .to({}, { duration: gsap.utils.random(0.1, 0.19) });
+      }
+    }
+
+    timeoutId = window.setTimeout(burst, gsap.utils.random(300, 700));
+
+    // Captured now (not read fresh in the cleanup below) — refs may already
+    // point elsewhere by unmount time, but the tweens targeting *these*
+    // specific nodes are exactly what needs killing.
+    const targets = [
+      redOffsetRef.current,
+      blueOffsetRef.current,
+      rgbLayerRef.current,
+      ...sliceRefs.current,
+      ...streakRefs.current,
+    ];
+    return () => {
+      window.clearTimeout(timeoutId);
+      gsap.killTweensOf(targets);
+    };
+  }, []);
+
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* width/height 0 + absolute: the filter still applies wherever it's
+          referenced by url(#hero-rgb-split), this just keeps the <svg>
+          itself from taking up any layout space. */}
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <filter id="hero-rgb-split" x="-20%" y="-20%" width="140%" height="140%">
+            <feColorMatrix
+              in="SourceGraphic"
+              type="matrix"
+              values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+              result="red"
+            />
+            <feOffset ref={redOffsetRef} in="red" dx="0" dy="0" result="redOffset" />
+            <feColorMatrix
+              in="SourceGraphic"
+              type="matrix"
+              values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
+              result="green"
+            />
+            <feColorMatrix
+              in="SourceGraphic"
+              type="matrix"
+              values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
+              result="blue"
+            />
+            <feOffset ref={blueOffsetRef} in="blue" dx="0" dy="0" result="blueOffset" />
+            <feBlend in="redOffset" in2="green" mode="screen" result="rg" />
+            <feBlend in="rg" in2="blueOffset" mode="screen" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* The real RGB-split layer — a duplicate of the photo with the SVG
+          filter above applied, opacity/filter-offsets driven by the burst
+          timeline. Sepia+saturate first pushes the source toward a single
+          hue so the isolated channels read as distinct colours rather than
+          the source photo's own (mostly desaturated black/grey) palette. */}
+      <div
+        ref={rgbLayerRef}
+        className="absolute inset-0 opacity-0"
+        style={{
+          backgroundImage: `url(${src})`,
+          backgroundSize: "100% auto",
+          backgroundPosition: "top",
+          filter: "url(#hero-rgb-split) saturate(3) contrast(1.3) brightness(1.15)",
+        }}
+      />
+
+      {/* Torn/displaced horizontal slices — same filtered duplicate, cropped
+          to a random band and jittered a few tens of px each stutter frame. */}
+      {Array.from({ length: GLITCH_SLICE_COUNT }).map((_, i) => (
+        <div
+          key={i}
+          ref={(el) => {
+            sliceRefs.current[i] = el;
+          }}
+          className="absolute inset-0 opacity-0"
+          style={{
+            backgroundImage: `url(${src})`,
+            backgroundSize: "100% auto",
+            backgroundPosition: "top",
+            filter: "url(#hero-rgb-split) saturate(3) contrast(1.3) brightness(1.15)",
+          }}
+        />
+      ))}
+
+      {/* Thin colour-streak flashes — the "light trail" accents. */}
+      {Array.from({ length: GLITCH_STREAK_COUNT }).map((_, i) => (
+        <div
+          key={i}
+          ref={(el) => {
+            streakRefs.current[i] = el;
+          }}
+          className="absolute inset-x-0 h-px opacity-0"
+          style={{
+            top: "50%",
+            background: `linear-gradient(90deg, transparent, ${STREAK_COLORS[i % STREAK_COLORS.length]}, transparent)`,
+            mixBlendMode: "screen",
+            transformOrigin: "center",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export function Hero() {
   const [ready, setReady] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   // SSR-safe default (matches first client render too, avoiding a hydration
   // mismatch) — upgraded to WebGL pre-paint in the useLayoutEffect below.
   const [useWebGL, setUseWebGL] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   const rootRef = useRef<HTMLElement>(null);
   const eyebrowRef = useRef<HTMLSpanElement>(null);
@@ -50,6 +253,7 @@ export function Hero() {
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
+    setPrefersReducedMotion(prefersReduced);
     setUseWebGL(!prefersReduced && !isMobileLite() && supportsWebGL());
 
     // GSAP must own this element's transform from the start. A CSS class
@@ -187,6 +391,13 @@ export function Hero() {
           paint *before* normal static content, so it'd end up behind the
           image instead of tinting it. */}
       <div aria-hidden className="absolute inset-0 bg-bg/25" />
+
+      {/* Periodic glitch flourish — skipped entirely under reduced motion,
+          same as every other animated layer in this section. Sits after the
+          tint and before the text overlay in DOM order (Hero's established
+          convention: plain DOM order + no z-index, see the notes above) so
+          it never washes out the copy on top. */}
+      {!prefersReducedMotion && <HeroGlitch src={HERO_IMAGE_SRC} />}
 
       <div className="absolute inset-x-0 top-0 flex h-screen flex-col px-6 py-10 md:px-10">
         {/* Grouped at the top, not vertically centered — hero.jpg's subject

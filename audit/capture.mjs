@@ -8,7 +8,6 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = path.join(__dirname, "screenshots");
-const REPORT_PATH = path.join(__dirname, "AUDIT_REPORT.md");
 const BASE_URL = "http://localhost:3000";
 
 fs.mkdirSync(OUT_DIR, { recursive: true });

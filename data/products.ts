@@ -48,26 +48,33 @@ export type Product = {
   specs: ProductSpecs;
 };
 
-const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+// DROP 01 — the first real collection, replacing the old 1-real/5-placeholder
+// seed set entirely. All 4 have real, generated photography under
+// /public/media/images/products/<id>/; completeness varies (see each
+// product's own comment) — this file is the single source of truth for
+// which assets are real vs. temporarily falling back to `main`, not the
+// components that read it. No more placeholder-path generator helpers
+// (the old railImages()/SIZES constant) — every path below is real or an
+// explicit, commented fallback, not a 404-by-design placeholder.
 
-// SceneRail's cutout + backdrop plate, per product.
-function railImages(id: string): Pick<ProductImages, "cutout" | "backdrop"> {
-  return {
-    cutout: `/media/images/${id}/cutout.png`,
-    backdrop: `/media/images/${id}/backdrop.jpg`,
-  };
+// The one constant to change when the rotation sequence's frame count
+// changes (e.g. after further watermark/segment cleanup) — every
+// product's sequenceFrames reads this, nothing hardcodes a frame count
+// directly. Currently 96: the real, delivered floating-garment segment
+// (see CLAUDE.md's SceneUnfold section for how that number was reached).
+export const SEQUENCE_FRAME_COUNT = 96;
+
+function sequenceFramePaths(count: number): string[] {
+  return Array.from(
+    { length: count },
+    (_, i) => `/media/sequence/frame_${String(i + 1).padStart(4, "0")}.jpg`
+  );
 }
 
 export const products: Product[] = [
   {
-    // The one real product — assets live under /public/media/images/products/
-    // onyx-hoodie/, a different directory shape than the other 5 placeholders'
-    // /media/images/<id>/... convention (no "products/" segment), so its
-    // paths are written out explicitly below rather than through
-    // railImages()/detailImages(). Don't "fix" those helpers to match; the
-    // other 5 are deliberately untouched placeholders (see their own paths).
     id: "onyx-hoodie",
-    name: "ONYX HOODIE",
+    name: "ONYX",
     moodLine: "WASHED. HEAVY. QUIET.",
     priceMRP: 4999,
     priceSale: 3499,
@@ -91,17 +98,11 @@ export const products: Product[] = [
       backdrop: "/media/images/products/onyx-hoodie/backdrop.jpg",
     },
     // The featured product for the homepage's SceneUnfold reveal — 96 real,
-    // delivered frames (.jpg; the 5 placeholder products still just use an
-    // empty sequenceFrames: [] below, no generator function needed for
-    // that). These are the floating-garment segment extracted from the
-    // source rotation video (trimmed to the clean half, watermark removed
-    // via delogo — see CLAUDE.md's SceneUnfold section for the extraction
-    // details), written out explicitly for the same reason the images
-    // above are.
-    sequenceFrames: Array.from(
-      { length: 96 },
-      (_, i) => `/media/sequence/frame_${String(i + 1).padStart(4, "0")}.jpg`
-    ),
+    // delivered frames (.jpg). See SEQUENCE_FRAME_COUNT below — the single
+    // constant to change once the watermark/segment cleanup's frame count
+    // is finalized; every product's sequenceFrames should keep using it
+    // rather than a hardcoded 96/85/whatever.
+    sequenceFrames: sequenceFramePaths(SEQUENCE_FRAME_COUNT),
     description:
       "Heavyweight. Washed to a quiet, faded black. Built to be lived in.",
     specs: {
@@ -111,141 +112,109 @@ export const products: Product[] = [
     },
   },
   {
-    id: "hoodie-concrete",
-    name: "Concrete Hoodie",
-    moodLine: "RAW. OVERSIZED. UNBOTHERED.",
-    priceMRP: 13200,
-    soldOut: true,
-    hook: "Built like it's never once apologized.",
-    useCase: "For grey days, long commutes, and not making eye contact.",
-    colorway: "Concrete Grey",
-    sizes: SIZES,
+    // Complete set: main, alt (real back view), and cutout (real — the
+    // ghost-mannequin shot's grey studio background was removed with a
+    // color-distance keying script, PIL-based, no ML model available in
+    // this environment; see CLAUDE.md's "DROP 01" note for the approach
+    // and its one known softness — faint bleed inside the hood's shadow).
+    id: "bone-hoodie",
+    name: "BONE",
+    moodLine: "RAW. PALE. UNBOTHERED.",
+    priceMRP: 4999,
+    priceSale: 3499,
+    hook: "Pale doesn't mean it's asking permission.",
+    useCase: "For daylight hours and not caring who's watching.",
+    colorway: "Bone",
+    sizes: ["S", "M", "L", "XL"],
     images: {
-      main: "/media/images/hoodie-concrete/main.jpg",
-      alt: "/media/images/hoodie-concrete/alt.jpg",
+      main: "/media/images/products/bone-hoodie/main.jpg",
+      alt: "/media/images/products/bone-hoodie/alt.jpg",
       gallery: [
-        "/media/images/hoodie-concrete/gallery-1.jpg",
-        "/media/images/hoodie-concrete/gallery-2.jpg",
+        "/media/images/products/bone-hoodie/main.jpg",
+        "/media/images/products/bone-hoodie/alt.jpg",
       ],
-      ...railImages("hoodie-concrete"),
+      cutout: "/media/images/products/bone-hoodie/cutout.png",
+      // TODO: no backdrop plate generated yet — placeholder path, 404s
+      // gracefully, same treatment as onyx-hoodie's.
+      backdrop: "/media/images/products/bone-hoodie/backdrop.jpg",
     },
     sequenceFrames: [],
     description:
-      "Garment-dyed for a lived-in wash, finished with an exposed reverse-coverstitch hood.",
+      "Heavyweight and pale on purpose — the one piece that doesn't disappear into the rest of the drop. Built the same way, worn a different way.",
     specs: {
-      fabric: "420gsm garment-dyed fleece",
-      cut: "Oversized, boxy body",
-      print: "Rubberized sleeve tab",
+      fabric: "480 GSM brushed-back French terry, garment-dyed bone.",
+      cut: "Oversized boxy fit, dropped shoulder, cropped hem.",
+      print: "Blank canvas — tonal woven label at the left hem, no front or back print.",
     },
   },
   {
-    id: "tee-relentless",
-    name: "Relentless Tee",
-    moodLine: "HEAVY. CROPPED. RELENTLESS.",
-    priceMRP: 5800,
-    priceSale: 4200,
-    hook: "Cut short. Patience shorter.",
-    useCase: "Layer it, don't explain it.",
-    colorway: "Jet Black",
-    sizes: SIZES,
+    // FEATURED — the acid-green cords/inner-hood are the one place the
+    // brand's signal color appears as a physical detail, not UI chrome.
+    // Complete set: main, alt (real back view, hood down, green lining
+    // visible), and cutout (real — this one shipped with native alpha
+    // transparency straight out of generation, no PIL keying needed).
+    id: "venom-hoodie",
+    name: "VENOM",
+    moodLine: "SHARP. LACED. TOXIC.",
+    priceMRP: 5499,
+    priceSale: 3999,
+    hook: "One green thread and the whole room notices.",
+    useCase: "For when blending in was never the plan.",
+    colorway: "Black / Acid",
+    sizes: ["S", "M", "L", "XL"],
     images: {
-      main: "/media/images/tee-relentless/main.jpg",
-      alt: "/media/images/tee-relentless/alt.jpg",
+      main: "/media/images/products/venom-hoodie/main.jpg",
+      alt: "/media/images/products/venom-hoodie/alt.jpg",
       gallery: [
-        "/media/images/tee-relentless/gallery-1.jpg",
-        "/media/images/tee-relentless/gallery-2.jpg",
+        "/media/images/products/venom-hoodie/main.jpg",
+        "/media/images/products/venom-hoodie/alt.jpg",
       ],
-      ...railImages("tee-relentless"),
+      cutout: "/media/images/products/venom-hoodie/cutout.png",
+      // TODO: no backdrop plate generated yet — placeholder path, 404s
+      // gracefully, same treatment as onyx-hoodie's and bone-hoodie's.
+      backdrop: "/media/images/products/venom-hoodie/backdrop.jpg",
     },
     sequenceFrames: [],
     description:
-      "240gsm heavyweight cotton, boxy oversized block fit with a dropped shoulder seam.",
+      "Same heavyweight build, laced with the one color this brand allows itself. Toxic in the details, quiet everywhere else.",
     specs: {
-      fabric: "240gsm heavyweight cotton",
-      cut: "Oversized box fit",
-      print: "Screen-print front + back",
+      fabric:
+        "480 GSM brushed-back French terry, washed black, acid-green drawcords and inner-hood lining.",
+      cut: "Oversized boxy fit, dropped shoulder, cropped hem.",
+      print: "Blank canvas — the acid-green cords and hood lining are the only color contact on the piece.",
     },
   },
   {
-    id: "tee-static",
-    name: "Static Tee",
-    moodLine: "LOUD. FADED. UNAPOLOGETIC.",
-    priceMRP: 5800,
-    hook: "Already lived in. Never lived down.",
-    useCase: "For the after-party you weren't invited to.",
-    colorway: "Acid Wash Grey",
-    sizes: SIZES,
+    // Complete set: main, alt (real back view), and cutout (real — also
+    // shipped with native alpha transparency, no PIL keying needed).
+    id: "mono-tee",
+    name: "MONO",
+    moodLine: "BOXY. BLANK. LOUD.",
+    priceMRP: 2499,
+    priceSale: 1799,
+    hook: "Says nothing. Still the loudest thing in the room.",
+    useCase: "Under anything, over everything, first out of the drawer.",
+    colorway: "Washed Black",
+    sizes: ["S", "M", "L", "XL"],
     images: {
-      main: "/media/images/tee-static/main.jpg",
-      alt: "/media/images/tee-static/alt.jpg",
+      main: "/media/images/products/mono-tee/main.jpg",
+      alt: "/media/images/products/mono-tee/alt.jpg",
       gallery: [
-        "/media/images/tee-static/gallery-1.jpg",
-        "/media/images/tee-static/gallery-2.jpg",
+        "/media/images/products/mono-tee/main.jpg",
+        "/media/images/products/mono-tee/alt.jpg",
       ],
-      ...railImages("tee-static"),
+      cutout: "/media/images/products/mono-tee/cutout.png",
+      // TODO: no backdrop plate generated yet — placeholder path, 404s
+      // gracefully, same treatment as the other three.
+      backdrop: "/media/images/products/mono-tee/backdrop.jpg",
     },
     sequenceFrames: [],
     description:
-      "Acid-washed heavyweight cotton with a distressed hand-feel and dropped hem.",
+      "Heavy cotton, cut boxy, says nothing and means it. The blank you reach for when everything else is doing too much.",
     specs: {
-      fabric: "230gsm acid-washed cotton",
-      cut: "Oversized, dropped hem",
-      print: "Discharge print, distressed",
-    },
-  },
-  {
-    id: "tee-concrete-jungle",
-    name: "Concrete Jungle Tee",
-    moodLine: "RAW. OVERSIZED. UNBOTHERED.",
-    priceMRP: 6200,
-    hook: "Made for pavement, not pleasantries.",
-    useCase: "City block, back alley, either exit.",
-    colorway: "Concrete Grey",
-    sizes: SIZES,
-    images: {
-      main: "/media/images/tee-concrete-jungle/main.jpg",
-      alt: "/media/images/tee-concrete-jungle/alt.jpg",
-      gallery: [
-        "/media/images/tee-concrete-jungle/gallery-1.jpg",
-        "/media/images/tee-concrete-jungle/gallery-2.jpg",
-      ],
-      ...railImages("tee-concrete-jungle"),
-    },
-    sequenceFrames: [],
-    description:
-      "Oversized fit with an all-over back print and a boxy silhouette built for layering.",
-    specs: {
-      fabric: "240gsm heavyweight cotton",
-      cut: "Oversized box fit",
-      print: "All-over back placement",
-    },
-  },
-  {
-    id: "tee-signal",
-    name: "Signal Tee",
-    moodLine: "SHARP. ACID. UNSEEN.",
-    priceMRP: 6200,
-    priceSale: 4900,
-    hook: "Catches light. Holds attention.",
-    useCase: "For the room you walk into last, on purpose.",
-    colorway: "Paper White",
-    sizes: SIZES,
-    images: {
-      main: "/media/images/tee-signal/main.jpg",
-      alt: "/media/images/tee-signal/alt.jpg",
-      gallery: [
-        "/media/images/tee-signal/gallery-1.jpg",
-        "/media/images/tee-signal/gallery-2.jpg",
-      ],
-      ...railImages("tee-signal"),
-    },
-    sequenceFrames: [],
-    description:
-      "Off-white heavyweight cotton with an acid-green foil print that catches light on movement.",
-    specs: {
-      fabric: "240gsm heavyweight cotton",
-      cut: "Oversized box fit",
-      print: "Acid-green foil, chest hit",
+      fabric: "260 GSM heavyweight cotton jersey, washed black.",
+      cut: "Oversized boxy fit, dropped shoulder seam, straight hem.",
+      print: "Blank canvas — no front or back print.",
     },
   },
 ];

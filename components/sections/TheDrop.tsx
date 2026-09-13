@@ -6,16 +6,24 @@ import { products } from "@/data/products";
 import { useCartStore } from "@/lib/cart-store";
 import { cn, formatPrice } from "@/lib/utils";
 
-const FEATURED = products.find((product) => product.id === "onyx-hoodie")!;
+// VENOM is the hero product — its acid-green cords/inner-hood lining are
+// the one place the brand's signal color appears as a physical detail, not
+// UI chrome, which is exactly the "featured" argument. See its own comment
+// in data/products.ts.
+const FEATURED = products.find((product) => product.id === "venom-hoodie")!;
 
-// The two real non-primary shots beyond main/alt — see data/products.ts's
-// onyx-hoodie gallery order (main, alt, detail-cuff, flatlay). Only 2 real
-// detail images exist for this product (not the old 3-key fabric/print/
-// stitch scheme), so this is a plain src/label list, not keyed off
-// images.details (which no seed product populates — see its type comment).
+// The two non-primary shots beyond main/alt — see data/products.ts's
+// gallery order (main, alt, then any dedicated detail/flatlay shots).
+// onyx-hoodie has real detail-cuff/flatlay images at gallery[2]/[3]; VENOM
+// doesn't yet (its gallery is just [main, alt]), so each entry here falls
+// back to `main` individually rather than assuming a fixed gallery length —
+// this is a plain src/label list, not keyed off images.details (which no
+// seed product populates — see its type comment).
+// TODO: swap these two `main` fallbacks for real venom-hoodie detail/flatlay
+// shots once they're generated — gallery[2]/[3], same as onyx-hoodie's.
 const DETAILS: { src: string; label: string }[] = [
-  { src: FEATURED.images.gallery[2], label: "Cuff" },
-  { src: FEATURED.images.gallery[3], label: "Flatlay" },
+  { src: FEATURED.images.gallery[2] ?? FEATURED.images.main, label: "Cuff" },
+  { src: FEATURED.images.gallery[3] ?? FEATURED.images.main, label: "Flatlay" },
 ];
 
 const SPEC_STORY: { label: string; key: keyof typeof FEATURED.specs }[] = [

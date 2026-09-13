@@ -103,6 +103,18 @@ export const products: Product[] = [
       // generates a tone-gradient stand-in instead of pointing an <img>
       // here — see ProductImages["backdrop"]'s own type comment).
       backdrop: "/media/images/products/onyx-hoodie/backdrop.jpg",
+      // Real, dedicated cuff macro + flatlay shots (not crops from
+      // main/alt like the other three) — the same detail-cuff.jpg every
+      // other product's `details.fabric` reuses, since it's genuinely this
+      // garment's own cuff. `stitch` isn't read by anything currently (see
+      // this type's own comment) — reusing the cuff shot rather than
+      // leaving it unset, since the field isn't optional once `details`
+      // itself is present.
+      details: {
+        fabric: "/media/images/products/onyx-hoodie/detail-cuff.jpg",
+        print: "/media/images/products/onyx-hoodie/flatlay.jpg",
+        stitch: "/media/images/products/onyx-hoodie/detail-cuff.jpg",
+      },
     },
     // The featured product for the homepage's SceneUnfold reveal — 96 real,
     // delivered frames (.jpg). See SEQUENCE_FRAME_COUNT below — the single
@@ -188,16 +200,16 @@ export const products: Product[] = [
       // TODO: no backdrop plate generated yet, same as the others — not
       // currently read anywhere, see ProductImages["backdrop"]'s comment.
       backdrop: "/media/images/products/venom-hoodie/backdrop.jpg",
-      // Real crops from main (drawcords/pocket) and alt (hood lining, shot
-      // from the back) — not a dedicated shoot, but genuinely distinct
-      // detail photography, cropped tight enough that the model's face
-      // never enters frame. Added because TheDrop's Cuff/Flatlay panels and
-      // SpecStory's Print chapter were both silently falling back to the
-      // exact same image (main.jpg) for this product, which is a real bug,
-      // not a cosmetic one — see TheDrop.tsx's DETAILS and SpecStory.tsx's
+      // Cuff reuses onyx-hoodie's real cuff macro shot — same garment
+      // construction across the drop, genuine detail photography rather
+      // than a crop standing in for one. Flatlay is this product's own real
+      // shot. Added because TheDrop's Cuff/Flatlay panels and SpecStory's
+      // Fabric chapter were both silently falling back to the exact same
+      // image (main.jpg) for this product, which is a real bug, not a
+      // cosmetic one — see TheDrop.tsx's DETAILS and SpecStory.tsx's
       // chapterImage(), both of which now prefer these when present.
       // `stitch` isn't read by anything currently (see this type's own
-      // comment) — reusing the cords crop rather than leaving it unset,
+      // comment) — reusing the cuff shot rather than leaving it unset,
       // since the field isn't optional once `details` itself is present.
       details: {
         fabric: "/media/images/products/onyx-hoodie/detail-cuff.jpg",

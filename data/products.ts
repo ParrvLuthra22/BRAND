@@ -156,13 +156,14 @@ export const products: Product[] = [
       // TODO: no backdrop plate generated yet, same as onyx-hoodie's — not
       // currently read anywhere, see ProductImages["backdrop"]'s comment.
       backdrop: "/media/images/products/bone-hoodie/backdrop.jpg",
-      // Real crops from main/alt (fabric texture + pocket; hood from the
-      // back), not a dedicated shoot — see the same note on venom-hoodie's
-      // `details` below for why these exist and what they fixed.
+      // Real, dedicated cuff macro + flatlay shots, color-matched to this
+      // product's own bone colorway (not onyx's black cuff — see
+      // venom-hoodie's comment below for why that reuse works there and
+      // wouldn't here).
       details: {
-        fabric: "/media/images/products/bone-hoodie/detail-fabric.jpg",
-        print: "/media/images/products/bone-hoodie/detail-hood.jpg",
-        stitch: "/media/images/products/bone-hoodie/detail-fabric.jpg",
+        fabric: "/media/images/products/bone-hoodie/detailed-cuff.png",
+        print: "/media/images/products/bone-hoodie/flatlay.png",
+        stitch: "/media/images/products/bone-hoodie/detailed-cuff.png",
       },
     },
     sequenceFrames: [],
@@ -250,12 +251,13 @@ export const products: Product[] = [
       // TODO: no backdrop plate generated yet, same as the other three —
       // not currently read anywhere, see ProductImages["backdrop"]'s comment.
       backdrop: "/media/images/products/mono-tee/backdrop.jpg",
-      // Real crops from main (sleeve/hem) and alt (back yoke) — see the
-      // same note on venom-hoodie's `details` above for why these exist.
+      // Real, dedicated sleeve-hem macro + flatlay shots — a washed-cotton
+      // jersey hem, not a ribbed hoodie cuff (this product is a tee), and a
+      // crew-neck fold rather than a hood.
       details: {
-        fabric: "/media/images/products/mono-tee/detail-cuff.jpg",
-        print: "/media/images/products/mono-tee/detail-back.jpg",
-        stitch: "/media/images/products/mono-tee/detail-cuff.jpg",
+        fabric: "/media/images/products/mono-tee/cuff-sleeve.png",
+        print: "/media/images/products/mono-tee/flatlay.png",
+        stitch: "/media/images/products/mono-tee/cuff-sleeve.png",
       },
     },
     sequenceFrames: [],

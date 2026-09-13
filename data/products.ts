@@ -200,9 +200,9 @@ export const products: Product[] = [
       // comment) — reusing the cords crop rather than leaving it unset,
       // since the field isn't optional once `details` itself is present.
       details: {
-        fabric: "/media/images/products/venom-hoodie/detail-cords.jpg",
-        print: "/media/images/products/venom-hoodie/detail-hood.jpg",
-        stitch: "/media/images/products/venom-hoodie/detail-cords.jpg",
+        fabric: "/media/images/products/onyx-hoodie/detail-cuff.jpg",
+        print: "/media/images/products/venom-hoodie/flatlay.png",
+        stitch: "/media/images/products/onyx-hoodie/detail-cuff.jpg",
       },
     },
     sequenceFrames: [],

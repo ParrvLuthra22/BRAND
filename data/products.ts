@@ -144,6 +144,14 @@ export const products: Product[] = [
       // TODO: no backdrop plate generated yet, same as onyx-hoodie's — not
       // currently read anywhere, see ProductImages["backdrop"]'s comment.
       backdrop: "/media/images/products/bone-hoodie/backdrop.jpg",
+      // Real crops from main/alt (fabric texture + pocket; hood from the
+      // back), not a dedicated shoot — see the same note on venom-hoodie's
+      // `details` below for why these exist and what they fixed.
+      details: {
+        fabric: "/media/images/products/bone-hoodie/detail-fabric.jpg",
+        print: "/media/images/products/bone-hoodie/detail-hood.jpg",
+        stitch: "/media/images/products/bone-hoodie/detail-fabric.jpg",
+      },
     },
     sequenceFrames: [],
     description:
@@ -180,6 +188,22 @@ export const products: Product[] = [
       // TODO: no backdrop plate generated yet, same as the others — not
       // currently read anywhere, see ProductImages["backdrop"]'s comment.
       backdrop: "/media/images/products/venom-hoodie/backdrop.jpg",
+      // Real crops from main (drawcords/pocket) and alt (hood lining, shot
+      // from the back) — not a dedicated shoot, but genuinely distinct
+      // detail photography, cropped tight enough that the model's face
+      // never enters frame. Added because TheDrop's Cuff/Flatlay panels and
+      // SpecStory's Print chapter were both silently falling back to the
+      // exact same image (main.jpg) for this product, which is a real bug,
+      // not a cosmetic one — see TheDrop.tsx's DETAILS and SpecStory.tsx's
+      // chapterImage(), both of which now prefer these when present.
+      // `stitch` isn't read by anything currently (see this type's own
+      // comment) — reusing the cords crop rather than leaving it unset,
+      // since the field isn't optional once `details` itself is present.
+      details: {
+        fabric: "/media/images/products/venom-hoodie/detail-cords.jpg",
+        print: "/media/images/products/venom-hoodie/detail-hood.jpg",
+        stitch: "/media/images/products/venom-hoodie/detail-cords.jpg",
+      },
     },
     sequenceFrames: [],
     description:
@@ -214,6 +238,13 @@ export const products: Product[] = [
       // TODO: no backdrop plate generated yet, same as the other three —
       // not currently read anywhere, see ProductImages["backdrop"]'s comment.
       backdrop: "/media/images/products/mono-tee/backdrop.jpg",
+      // Real crops from main (sleeve/hem) and alt (back yoke) — see the
+      // same note on venom-hoodie's `details` above for why these exist.
+      details: {
+        fabric: "/media/images/products/mono-tee/detail-cuff.jpg",
+        print: "/media/images/products/mono-tee/detail-back.jpg",
+        stitch: "/media/images/products/mono-tee/detail-cuff.jpg",
+      },
     },
     sequenceFrames: [],
     description:

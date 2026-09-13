@@ -13,19 +13,25 @@ import { cn, formatPrice } from "@/lib/utils";
 // in data/products.ts.
 const FEATURED = products.find((product) => product.id === "venom-hoodie")!;
 
-// The two non-primary shots beyond main/alt — see data/products.ts's
-// gallery order (main, alt, then any dedicated detail/flatlay shots).
-// onyx-hoodie has real detail-cuff/flatlay images at gallery[2]/[3]; VENOM
-// doesn't yet (its gallery is just [main, alt]), so each entry here falls
-// back to `main` individually rather than assuming a fixed gallery length —
-// this is a plain src/label list, not keyed off images.details (which no
-// seed product populates — see its type comment).
-// TODO: swap these two `main` fallbacks for real venom-hoodie detail/flatlay
-// shots once they're generated — gallery[2]/[3], same as onyx-hoodie's.
-const DETAILS: { src: string; label: string }[] = [
-  { src: FEATURED.images.gallery[2] ?? FEATURED.images.main, label: "Cuff" },
-  { src: FEATURED.images.gallery[3] ?? FEATURED.images.main, label: "Flatlay" },
-];
+// Two non-primary detail shots. Prefer images.details (fabric/print) when
+// the featured product has it — VENOM does now (real crops from main/alt,
+// see data/products.ts), and reading from there is what fixed a real bug:
+// this used to fall back to gallery[2]/[3] with each entry independently
+// defaulting to `main` when absent, which for VENOM (gallery is just
+// [main, alt], no dedicated shots) meant *both* "Cuff" and "Flatlay" quietly
+// rendered the exact same full-body photo, model included. onyx-hoodie has
+// no `details` populated (its real detail-cuff/flatlay shots live directly
+// in gallery[2]/[3] instead), so it still uses that branch correctly if it
+// were ever featured again.
+const DETAILS: { src: string; label: string }[] = FEATURED.images.details
+  ? [
+      { src: FEATURED.images.details.fabric, label: "Fabric" },
+      { src: FEATURED.images.details.print, label: "Print" },
+    ]
+  : [
+      { src: FEATURED.images.gallery[2] ?? FEATURED.images.main, label: "Cuff" },
+      { src: FEATURED.images.gallery[3] ?? FEATURED.images.main, label: "Flatlay" },
+    ];
 
 const SPEC_STORY: { label: string; key: keyof typeof FEATURED.specs }[] = [
   { label: "Fabric", key: "fabric" },

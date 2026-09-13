@@ -145,9 +145,21 @@ async function domSectionAudit(page) {
       ),
     };
 
-    // Section 5 — Lookbook (not expected to exist yet)
+    // Section 5 — Lookbook. Scoped via mix-blend-difference + pointer-events-
+    // none together — mix-blend-difference alone also matches SceneUnfold's
+    // "Unfold" headline, and a bare word match across every h2 on the page
+    // would also catch TheDrop's h2 (its featured product name renders as
+    // "VENOM" too). Both Lookbook variants (desktop track + LookbookSlide,
+    // used for mobile/reduced) carry both classes together; neither of the
+    // others does.
+    const lookbookHeadlines = qa("h2.mix-blend-difference.pointer-events-none");
+    const lookbookHeadline = lookbookHeadlines.find(
+      (el) => el.textContent?.trim() === "HEAVY"
+    );
     const lookbook = {
-      found: !!q('[class*="lookbook" i], [id*="lookbook" i]'),
+      found: !!lookbookHeadline,
+      slideWords: lookbookHeadlines.map((el) => el.textContent?.trim()),
+      rect: rectOf(lookbookHeadline?.closest("section") ?? null),
     };
 
     // Section 6 — Manifesto
@@ -158,10 +170,20 @@ async function domSectionAudit(page) {
       hasVideo: !!q("video"),
     };
 
-    // Section 7 — TheDrop
-    const theDropHeading = qa("h2").find((el) =>
-      ["ONYX", "BONE", "VENOM", "MONO"].includes(el.textContent?.trim() ?? "")
-    );
+    // Section 7 — TheDrop. Scoped to the section containing "Latest Drop" —
+    // Lookbook's own h2 can render the same product-name words (VENOM is
+    // both a slide headline and TheDrop's featured product), so a bare word
+    // match across every h2 on the page isn't reliable here.
+    const theDropSection = qa("span").find(
+      (el) => el.textContent?.trim() === "Latest Drop"
+    )?.closest("section");
+    const theDropHeading = theDropSection
+      ? qa("h2").find(
+          (el) =>
+            el.closest("section") === theDropSection &&
+            ["ONYX", "BONE", "VENOM", "MONO"].includes(el.textContent?.trim() ?? "")
+        )
+      : undefined;
     const theDrop = {
       hasLatestDropEyebrow: textIncludesAny("span", "Latest Drop"),
       featuredName: theDropHeading?.textContent?.trim() ?? null,
@@ -181,7 +203,12 @@ async function domSectionAudit(page) {
       cardNames: shopCards.map(
         (c) => c.querySelector("h3")?.textContent?.trim() ?? null
       ),
-      hasIndexNumbers: qa("#shop [class*='index' i], #shop [data-index]").length > 0,
+      // The bento index numbers are plain spans styled inline (no class/
+      // data-attribute marker) — matched by content (01-04) instead.
+      hasIndexNumbers:
+        shopCards.length > 0 &&
+        qa("#shop span").filter((s) => /^0[1-4]$/.test(s.textContent?.trim() ?? "")).length ===
+          shopCards.length,
       // bento = visibly different cell sizes; plain grid = every card the
       // same aspect-[3/4]. Heuristic: collect distinct rounded heights.
       cardHeights: Array.from(
@@ -205,9 +232,10 @@ async function domSectionAudit(page) {
 
     // Global — cursor / cart drawer / capture modal / sticky nav
     const global = {
-      cursorCandidate: !!q(
-        '[class*="cursor" i]:not(html):not(body), [data-cursor]'
-      ),
+      // Cursor.tsx toggles this class on <html> only while actually active
+      // (non-touch, non-reduced-motion) — a much more reliable signal than
+      // guessing at its className, which contains no literal "cursor" text.
+      cursorCandidate: document.documentElement.classList.contains("cursor-none"),
       cartDrawerMounted: !!q('[role="dialog"][aria-label="Cart"]'),
       captureModalMounted: !!q('[role="dialog"][aria-label="Join the Cult"]'),
       topNavFound: !!q("header"),

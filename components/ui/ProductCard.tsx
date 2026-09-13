@@ -13,9 +13,19 @@ const MAX_TILT = 6;
 export function ProductCard({
   product,
   className,
+  imageClassName,
 }: {
   product: Product;
   className?: string;
+  /**
+   * Overrides the image container's default `aspect-[3/4]` box — for
+   * ShopGrid's bento cells, where the cell's own grid row/col span (not a
+   * fixed aspect ratio) determines the shape, so the image needs to fill
+   * whatever height the cell gives it instead. Every other caller (the
+   * PDP's RelatedProducts rail) omits this and keeps the standard card
+   * shape.
+   */
+  imageClassName?: string;
 }) {
   const [showAlt, setShowAlt] = useState(false);
   const [isTouch, setIsTouch] = useState(false);
@@ -81,7 +91,7 @@ export function ProductCard({
           rotateY: springRotateY,
           transformPerspective: 800,
         }}
-        className="relative aspect-[3/4] overflow-hidden bg-concrete"
+        className={imageClassName ?? "relative aspect-[3/4] overflow-hidden bg-concrete"}
       >
         {product.priceSale && (
           <span className="mono-label absolute left-3 top-3 z-10 border border-sale bg-bg/80 px-2 py-1 text-sale">

@@ -13,20 +13,25 @@ import { cn, formatPrice } from "@/lib/utils";
 // in data/products.ts.
 const FEATURED = products.find((product) => product.id === "venom-hoodie")!;
 
-// Two non-primary detail shots. Prefer images.details (fabric/print) when
-// the featured product has it — VENOM does now (real crops from main/alt,
-// see data/products.ts), and reading from there is what fixed a real bug:
-// this used to fall back to gallery[2]/[3] with each entry independently
-// defaulting to `main` when absent, which for VENOM (gallery is just
-// [main, alt], no dedicated shots) meant *both* "Cuff" and "Flatlay" quietly
-// rendered the exact same full-body photo, model included. onyx-hoodie has
-// no `details` populated (its real detail-cuff/flatlay shots live directly
-// in gallery[2]/[3] instead), so it still uses that branch correctly if it
-// were ever featured again.
+// Two non-primary detail shots, always labeled "Cuff"/"Flatlay" — kept as
+// plain display labels distinct from SPEC_STORY's "Fabric"/"Cut"/"Print"
+// text teaser right above this (same page, same section), which would
+// otherwise collide (both blocks showing "Fabric" and "Print" reads as
+// duplicated/broken even though the images themselves are correct and
+// distinct). Prefer images.details (fabric/print) as the *source* when the
+// featured product has it — VENOM does now (real crops from main/alt, see
+// data/products.ts) — that's what fixed the real underlying bug: this used
+// to fall back to gallery[2]/[3] with each entry independently defaulting
+// to `main` when absent, which for VENOM (gallery is just [main, alt], no
+// dedicated shots) meant *both* panels quietly rendered the exact same
+// full-body photo, model included. onyx-hoodie has no `details` populated
+// (its real detail-cuff/flatlay shots live directly in gallery[2]/[3]
+// instead), so it still uses that branch correctly if it were ever
+// featured again.
 const DETAILS: { src: string; label: string }[] = FEATURED.images.details
   ? [
-      { src: FEATURED.images.details.fabric, label: "Fabric" },
-      { src: FEATURED.images.details.print, label: "Print" },
+      { src: FEATURED.images.details.fabric, label: "Cuff" },
+      { src: FEATURED.images.details.print, label: "Flatlay" },
     ]
   : [
       { src: FEATURED.images.gallery[2] ?? FEATURED.images.main, label: "Cuff" },

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { gsap, EASE_OUT } from "@/lib/gsap";
 import { products } from "@/data/products";
 import { SceneUnfoldCanvas } from "@/components/webgl/SceneUnfoldCanvas";
+import { markSceneUnfoldReady } from "@/lib/scene-unfold-ready";
 
 const FEATURED = products.find((product) => product.sequenceFrames?.length);
 const FRAME_URLS = FEATURED?.sequenceFrames ?? [];
@@ -115,6 +116,19 @@ export function SceneUnfold() {
       tl.kill();
     };
   }, [ready, prefersReduced]);
+
+  // Signals SceneRail/Lookbook that it's now safe to create their own
+  // ScrollTriggers — see lib/scene-unfold-ready.ts for why this exists.
+  // Declared after the pin-creation effect above, which matters: React
+  // fires same-commit effects in declaration order, so by the time this
+  // runs, that effect (and the pin it creates, if any) has already run.
+  // Fires regardless of prefersReduced — reduced motion never creates a
+  // pin at all, so there's nothing to wait for in that case either, and
+  // this still needs to unblock SceneRail/Lookbook once `ready` is known.
+  useEffect(() => {
+    if (!ready) return;
+    markSceneUnfoldReady();
+  }, [ready]);
 
   // Reduced motion: no pin. A short, one-time autoplay through the sequence
   // the first time the section is reached, then it just rests on the final

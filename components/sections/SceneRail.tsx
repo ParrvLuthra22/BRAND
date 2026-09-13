@@ -5,6 +5,7 @@ import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import { gsap } from "@/lib/gsap";
 import { useCursorStore } from "@/lib/cursor-store";
+import { onSceneUnfoldReady } from "@/lib/scene-unfold-ready";
 import { products, type Product } from "@/data/products";
 import { RailTransitionCanvas } from "@/components/webgl/RailTransitionCanvas";
 import { ProductImage } from "@/components/ui/ProductImage";
@@ -97,6 +98,10 @@ export function SceneRail() {
   // same pattern as Hero/SceneUnfold's reduced-motion / WebGL-support checks.
   const [mode, setMode] = useState<RailMode>("mobile");
   const [backdropImages, setBackdropImages] = useState<HTMLImageElement[]>([]);
+  // See lib/scene-unfold-ready.ts — creating this section's own pin before
+  // SceneUnfold's (async-gated, so not reliably ready on mount) exists
+  // caches a wrong start/end that nothing later corrects.
+  const [canPin, setCanPin] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -138,8 +143,10 @@ export function SceneRail() {
   const getProgress = useCallback(() => progressRef.current, []);
   const setCursorLabel = useCursorStore((state) => state.setLabel);
 
+  useEffect(() => onSceneUnfoldReady(() => setCanPin(true)), []);
+
   useEffect(() => {
-    if (mode !== "desktop" || !sectionRef.current || !trackRef.current) return;
+    if (!canPin || mode !== "desktop" || !sectionRef.current || !trackRef.current) return;
 
     const itemCount = products.length;
     const travelX = () => (itemCount - 1) * window.innerWidth;
@@ -188,7 +195,7 @@ export function SceneRail() {
       tl.scrollTrigger?.kill();
       tl.kill();
     };
-  }, [mode]);
+  }, [mode, canPin]);
 
   if (mode === "reduced") {
     return (

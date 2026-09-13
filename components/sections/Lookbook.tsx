@@ -6,6 +6,7 @@ import { gsap } from "@/lib/gsap";
 import { HERO_IMAGE_SRC } from "@/lib/loader";
 import { products } from "@/data/products";
 import { Reveal } from "@/components/ui/Reveal";
+import { onSceneUnfoldReady } from "@/lib/scene-unfold-ready";
 
 const SCROLL_PER_SLIDE_VH = 1;
 const TEXT_PARALLAX = 45; // %, how far the kinetic type drifts per slide
@@ -34,6 +35,11 @@ export function Lookbook() {
   // SSR-safe default (mobile — lightest markup, no pin), upgraded pre-paint,
   // same pattern as SceneRail's mode check.
   const [mode, setMode] = useState<Mode>("mobile");
+  // See lib/scene-unfold-ready.ts — same reasoning as SceneRail's identical
+  // canPin gate: creating this section's pin before SceneUnfold's own
+  // (async-gated) one exists caches a wrong start/end that nothing later
+  // corrects.
+  const [canPin, setCanPin] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -48,10 +54,12 @@ export function Lookbook() {
     else setMode("desktop");
   }, []);
 
+  useEffect(() => onSceneUnfoldReady(() => setCanPin(true)), []);
+
   // Desktop: pin the section and translate the track exactly like
   // SceneRail's own rail — same formula, same reasoning (see that file).
   useEffect(() => {
-    if (mode !== "desktop" || !sectionRef.current || !trackRef.current) return;
+    if (!canPin || mode !== "desktop" || !sectionRef.current || !trackRef.current) return;
 
     const itemCount = SLIDES.length;
     const travelX = () => (itemCount - 1) * window.innerWidth;
@@ -87,7 +95,7 @@ export function Lookbook() {
       tl.scrollTrigger?.kill();
       tl.kill();
     };
-  }, [mode]);
+  }, [mode, canPin]);
 
   if (mode === "reduced") {
     return (

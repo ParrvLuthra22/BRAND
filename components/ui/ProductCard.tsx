@@ -4,6 +4,7 @@ import { useLayoutEffect, useState, type MouseEvent } from "react";
 import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
 import type { Product } from "@/data/products";
 import { useCartStore } from "@/lib/cart-store";
+import { useCursorStore } from "@/lib/cursor-store";
 import { cn, formatPrice } from "@/lib/utils";
 import { ProductImage } from "@/components/ui/ProductImage";
 
@@ -33,6 +34,7 @@ export function ProductCard({
 
   const addItem = useCartStore((state) => state.addItem);
   const openCart = useCartStore((state) => state.open);
+  const setCursorLabel = useCursorStore((state) => state.setLabel);
 
   const rotateX = useMotionValue(0);
   const rotateY = useMotionValue(0);
@@ -47,11 +49,13 @@ export function ProductCard({
   }, []);
 
   function handleMouseEnter() {
+    setCursorLabel("VIEW");
     if (isTouch) return;
     setShowAlt(true);
   }
 
   function handleMouseLeave() {
+    setCursorLabel(null);
     if (isTouch) return;
     setShowAlt(false);
     rotateX.set(0);
@@ -145,6 +149,8 @@ export function ProductCard({
 
       <button
         onClick={handleAddToCart}
+        onMouseEnter={() => !product.soldOut && setCursorLabel("ADD")}
+        onMouseLeave={() => setCursorLabel(null)}
         disabled={product.soldOut}
         className={cn(
           "w-full rounded-full px-8 py-4 mono-label transition-colors duration-[var(--dur-fast)] ease-[var(--ease-out)]",

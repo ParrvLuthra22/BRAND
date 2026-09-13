@@ -168,3 +168,12 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Toggled on <html> by components/ui/Cursor.tsx only while it's actually
+   active (never on touch devices or under prefers-reduced-motion — see its
+   own comment) — the native cursor is hidden site-wide exactly while, and
+   only while, the custom one is standing in for it. */
+.cursor-none,
+.cursor-none * {
+  cursor: none !important;
+}

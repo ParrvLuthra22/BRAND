@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { Product } from "@/data/products";
 import { useCartStore } from "@/lib/cart-store";
+import { useCursorStore } from "@/lib/cursor-store";
 import { cn, formatPrice, EASE_OUT } from "@/lib/utils";
 
 const MAX_QUANTITY = 10;
@@ -50,6 +51,7 @@ export function ProductOverview({ product }: { product: Product }) {
 
   const addItem = useCartStore((state) => state.addItem);
   const openCart = useCartStore((state) => state.open);
+  const setCursorLabel = useCursorStore((state) => state.setLabel);
 
   function handleAddToCart() {
     if (product.soldOut) return;
@@ -186,6 +188,8 @@ export function ProductOverview({ product }: { product: Product }) {
           <div className="flex flex-col gap-2">
             <button
               onClick={handleAddToCart}
+              onMouseEnter={() => !product.soldOut && setCursorLabel("ADD")}
+              onMouseLeave={() => setCursorLabel(null)}
               disabled={product.soldOut}
               className={cn(
                 "w-full rounded-full px-8 py-4 mono-label transition-colors duration-[var(--dur-fast)] ease-[var(--ease-out)]",

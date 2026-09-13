@@ -5,6 +5,7 @@ import { Grain } from "@/components/ui/Grain";
 import { TopNav } from "@/components/ui/TopNav";
 import { CartDrawer } from "@/components/ui/CartDrawer";
 import { CaptureModal } from "@/components/ui/CaptureModal";
+import { Cursor } from "@/components/ui/Cursor";
 import { Loader } from "@/components/sections/Loader";
 import "./globals.css";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
         <TopNav />
         <CartDrawer />
         <CaptureModal />
+        <Cursor />
         {/* Mounted in the root layout (not per-page) so it gates the very
             first paint but never remounts on client-side route changes. */}
         <Loader />

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import { gsap } from "@/lib/gsap";
+import { useCursorStore } from "@/lib/cursor-store";
 import { products, type Product } from "@/data/products";
 import { RailTransitionCanvas } from "@/components/webgl/RailTransitionCanvas";
 import { ProductImage } from "@/components/ui/ProductImage";
@@ -135,6 +136,7 @@ export function SceneRail() {
   }, []);
 
   const getProgress = useCallback(() => progressRef.current, []);
+  const setCursorLabel = useCursorStore((state) => state.setLabel);
 
   useEffect(() => {
     if (mode !== "desktop" || !sectionRef.current || !trackRef.current) return;
@@ -211,6 +213,8 @@ export function SceneRail() {
   return (
     <section
       ref={sectionRef}
+      onMouseEnter={() => setCursorLabel("DRAG")}
+      onMouseLeave={() => setCursorLabel(null)}
       className="relative h-screen w-full overflow-hidden bg-bg"
     >
       <div ref={trackRef} className="absolute inset-0 flex">

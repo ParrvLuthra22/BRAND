@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger, EASE_OUT } from "@/lib/gsap";
 import { products } from "@/data/products";
 import { useCartStore } from "@/lib/cart-store";
+import { useCursorStore } from "@/lib/cursor-store";
 import { cn, formatPrice } from "@/lib/utils";
 
 // VENOM is the hero product — its acid-green cords/inner-hood lining are
@@ -42,6 +43,7 @@ export function TheDrop() {
   const maskRefs = useRef<(HTMLDivElement | null)[]>([]);
   const addItem = useCartStore((state) => state.addItem);
   const openCart = useCartStore((state) => state.open);
+  const setCursorLabel = useCursorStore((state) => state.setLabel);
 
   useLayoutEffect(() => {
     setPrefersReduced(
@@ -137,6 +139,8 @@ export function TheDrop() {
 
             <button
               onClick={handleAddToCart}
+              onMouseEnter={() => setCursorLabel("ADD")}
+              onMouseLeave={() => setCursorLabel(null)}
               className="mt-2 w-full rounded-full bg-acid px-8 py-4 mono-label text-bg transition-colors duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-acid-dim md:w-auto"
             >
               Add to Cart

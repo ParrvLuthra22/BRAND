@@ -4,7 +4,14 @@ export type ProductImages = {
   gallery: string[];
   /** Transparent-background PNG, garment isolated — SceneRail's floating cutout. */
   cutout: string;
-  /** Full-bleed backdrop plate behind the cutout in SceneRail. */
+  /**
+   * Full-bleed backdrop plate behind the cutout in SceneRail — not read by
+   * any component right now. No product has real backdrop photography yet,
+   * and SceneRail generates a per-product tone-gradient stand-in instead
+   * (RAIL_TONE_STOPS in SceneRail.tsx) rather than pointing an <img> at this
+   * path. Left in the type as a future affordance: once real plates exist,
+   * point this at them and give SceneRail's tone div a background-image.
+   */
   backdrop: string;
   /**
    * Optional extra mask-wipe detail shots, keyed by spec. Currently unset
@@ -92,9 +99,9 @@ export const products: Product[] = [
         "/media/images/products/onyx-hoodie/flatlay.jpg",
       ],
       cutout: "/media/images/products/onyx-hoodie/cutout.png",
-      // Not delivered yet (only SceneRail needs this) — placeholder path in
-      // the same real-asset folder, same 404-gracefully treatment as every
-      // other not-yet-real path in this file.
+      // Not delivered yet, and not currently read anywhere (SceneRail
+      // generates a tone-gradient stand-in instead of pointing an <img>
+      // here — see ProductImages["backdrop"]'s own type comment).
       backdrop: "/media/images/products/onyx-hoodie/backdrop.jpg",
     },
     // The featured product for the homepage's SceneUnfold reveal — 96 real,
@@ -134,8 +141,8 @@ export const products: Product[] = [
         "/media/images/products/bone-hoodie/alt.jpg",
       ],
       cutout: "/media/images/products/bone-hoodie/cutout.png",
-      // TODO: no backdrop plate generated yet — placeholder path, 404s
-      // gracefully, same treatment as onyx-hoodie's.
+      // TODO: no backdrop plate generated yet, same as onyx-hoodie's — not
+      // currently read anywhere, see ProductImages["backdrop"]'s comment.
       backdrop: "/media/images/products/bone-hoodie/backdrop.jpg",
     },
     sequenceFrames: [],
@@ -170,8 +177,8 @@ export const products: Product[] = [
         "/media/images/products/venom-hoodie/alt.jpg",
       ],
       cutout: "/media/images/products/venom-hoodie/cutout.png",
-      // TODO: no backdrop plate generated yet — placeholder path, 404s
-      // gracefully, same treatment as onyx-hoodie's and bone-hoodie's.
+      // TODO: no backdrop plate generated yet, same as the others — not
+      // currently read anywhere, see ProductImages["backdrop"]'s comment.
       backdrop: "/media/images/products/venom-hoodie/backdrop.jpg",
     },
     sequenceFrames: [],
@@ -204,8 +211,8 @@ export const products: Product[] = [
         "/media/images/products/mono-tee/alt.jpg",
       ],
       cutout: "/media/images/products/mono-tee/cutout.png",
-      // TODO: no backdrop plate generated yet — placeholder path, 404s
-      // gracefully, same treatment as the other three.
+      // TODO: no backdrop plate generated yet, same as the other three —
+      // not currently read anywhere, see ProductImages["backdrop"]'s comment.
       backdrop: "/media/images/products/mono-tee/backdrop.jpg",
     },
     sequenceFrames: [],

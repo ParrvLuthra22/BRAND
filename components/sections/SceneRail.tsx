@@ -15,35 +15,73 @@ const CUTOUT_PARALLAX = 6; // %
 const EXPLORE_LINK_CLASS =
   "mono-label shrink-0 rounded-full border border-acid px-5 py-2 text-acid transition-colors duration-[var(--dur-fast)] ease-[var(--ease-out)] hover:bg-acid hover:text-bg";
 
-// Per-product ambient tone, standing in for real backdrop photography —
-// `images.backdrop` 404s gracefully for all 4 products right now (none has
-// been shot yet), which otherwise leaves the cutout floating in a flat black
-// void. This is the Tier-2 "per-product backdrop tone shift" brief (cold
-// graphite ONYX/MONO, warm light BONE, faint acid-green glow VENOM),
-// implemented as a radial-gradient wash since there's no plate to tint yet —
-// swap to a real photographic tint once backdrop.jpg exists per product,
-// this map can go away then.
-const RAIL_TONE: Record<string, string> = {
-  "onyx-hoodie": "radial-gradient(ellipse at center, #242424 0%, #0A0A0A 65%)",
-  "bone-hoodie":
-    "radial-gradient(ellipse at center, rgba(242,240,235,0.18) 0%, #0A0A0A 65%)",
-  "venom-hoodie":
-    "radial-gradient(ellipse at center, rgba(198,255,0,0.16) 0%, #0A0A0A 65%)",
-  "mono-tee": "radial-gradient(ellipse at center, #242424 0%, #0A0A0A 65%)",
+// Per-product ambient tone, standing in for real backdrop photography — no
+// product has a backdrop plate shot yet (images.backdrop is now unused
+// entirely; kept on the type as a future affordance for whenever real
+// photography arrives, see data/products.ts). This is the Tier-2
+// "per-product backdrop tone shift" brief (cold graphite ONYX/MONO, warm
+// light BONE, faint acid-green glow VENOM), implemented as a radial-gradient
+// wash — a single source of truth (`inner`/`outer` colour stops) drives both
+// the DOM layer (CSS radial-gradient, see railToneCss) and the WebGL
+// transition overlay's texture (canvas-drawn, see createGradientBackdrop),
+// so the two never drift out of sync with each other.
+const RAIL_TONE_STOPS: Record<string, [inner: string, outer: string]> = {
+  "onyx-hoodie": ["#242424", "#0A0A0A"],
+  "bone-hoodie": ["rgba(242,240,235,0.22)", "#0A0A0A"],
+  "venom-hoodie": ["rgba(198,255,0,0.22)", "#0A0A0A"],
+  "mono-tee": ["#242424", "#0A0A0A"],
 };
 
-function preloadImages(urls: string[]): Promise<HTMLImageElement[]> {
-  return Promise.all(
-    urls.map(
-      (src) =>
-        new Promise<HTMLImageElement>((resolve) => {
-          const img = new window.Image();
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(img);
-          img.src = src;
-        })
-    )
+function railToneCss(id: string): string {
+  const [inner, outer] = RAIL_TONE_STOPS[id];
+  return `radial-gradient(ellipse at center, ${inner} 0%, ${outer} 65%)`;
+}
+
+// Bakes the same tone stops into a real bitmap (near-black base fill, then
+// the radial wash on top) so RailTransitionCanvas's WebGL pulse — which
+// needs an actual <img>/texture, not a CSS value — always has a real,
+// on-brand-coloured image to distort instead of a failed network image
+// (transparent/black), which is what produced the "dead black frame" during
+// between-item transitions before this fix (a 404'd <img> has no natural
+// dimensions, so the shared shader had nothing to bind and rendered mostly
+// black at exactly the moment its distortion pulse peaked).
+// 16:9 — the WebGL overlay's shader does a "contain fit" (see heroShaders.ts's
+// containUv), so a texture whose aspect ratio is far from the viewport's
+// (a portrait canvas under a wide desktop viewport, say) gets letterboxed
+// into flat near-black bands covering most of the frame — which is exactly
+// what produced a "dead black frame" at the exact midpoint of a between-item
+// transition (canvas opacity peaks to 1 there, so the letterbox bands become
+// the whole visible screen). A wide, common-viewport-ish aspect keeps the
+// letterbox minimal for realistic desktop widths.
+function createGradientBackdrop(
+  stops: [string, string],
+  width = 1600,
+  height = 900
+): Promise<HTMLImageElement> {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#0A0A0A";
+  ctx.fillRect(0, 0, width, height);
+  const gradient = ctx.createRadialGradient(
+    width / 2,
+    height / 2,
+    0,
+    width / 2,
+    height / 2,
+    Math.max(width, height) * 0.65
   );
+  gradient.addColorStop(0, stops[0]);
+  gradient.addColorStop(1, stops[1]);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => resolve(img);
+    img.src = canvas.toDataURL("image/png");
+  });
 }
 
 function isMobileViewport(): boolean {
@@ -61,7 +99,7 @@ export function SceneRail() {
 
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const backdropRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const backdropRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cutoutRefs = useRef<(HTMLImageElement | null)[]>([]);
   const progressRef = useRef(0);
 
@@ -78,16 +116,19 @@ export function SceneRail() {
     }
   }, []);
 
-  // The rail's own backdrop plates, for the shared WebGL transition overlay.
-  // Not gated behind the pin — the DOM backdrops render immediately either
-  // way, and the overlay is invisible at rest regardless of load state.
+  // Generated (not fetched) backdrop plates for the shared WebGL transition
+  // overlay — see createGradientBackdrop's comment above. Not gated behind
+  // the pin: the DOM tone layers render immediately either way via plain
+  // CSS, and the overlay itself is invisible at rest regardless of load
+  // state; this only needs to resolve before the rail's between-item pulse
+  // first plays.
   useEffect(() => {
     let cancelled = false;
-    preloadImages(products.map((product) => product.images.backdrop)).then(
-      (loaded) => {
-        if (!cancelled) setBackdropImages(loaded);
-      }
-    );
+    Promise.all(
+      products.map((product) => createGradientBackdrop(RAIL_TONE_STOPS[product.id]))
+    ).then((generated) => {
+      if (!cancelled) setBackdropImages(generated);
+    });
     return () => {
       cancelled = true;
     };
@@ -178,20 +219,18 @@ export function SceneRail() {
             key={product.id}
             className="relative h-full w-screen shrink-0 overflow-hidden"
           >
+            {/* Generated tone wash, not a photo — no product has a backdrop
+                plate shot yet. Carries the same parallax ref/tween a real
+                backdrop <img> would have (see the parallax loop below), so
+                swapping in real photography later is a one-line change: give
+                this div a background-image instead of just a color. */}
             <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{ background: RAIL_TONE[product.id] }}
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
               ref={(el) => {
                 backdropRefs.current[i] = el;
               }}
-              src={product.images.backdrop}
-              alt=""
               aria-hidden
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0"
+              style={{ background: railToneCss(product.id) }}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -253,23 +292,15 @@ function RailCard({
   return (
     <div className={className}>
       <div className="relative aspect-[3/4] overflow-hidden bg-concrete">
+        {/* Generated tone wash, not a photo — same as the desktop track's
+            backdrop layer above. No <img> at all here: no product has a
+            backdrop plate shot yet, and ProductImage's "Coming Soon"
+            fallback (right for a missing garment photo) would just paint an
+            opaque box over this glow if used for a decorative backdrop. */}
         <div
           aria-hidden
           className="absolute inset-0"
-          style={{ background: RAIL_TONE[product.id] }}
-        />
-        {/* Plain <img>, not ProductImage — this is a decorative, aria-hidden
-            backdrop plate, not a product photo. ProductImage's "Coming Soon"
-            fallback is right for a missing garment shot but wrong here: it'd
-            paint an opaque box over the RAIL_TONE glow above, right where
-            we're deliberately using color to stand in for the not-yet-shot
-            plate. Same reasoning as the desktop track's backdrop <img>. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={product.images.backdrop}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 h-full w-full object-cover"
+          style={{ background: railToneCss(product.id) }}
         />
         <ProductImage
           src={product.images.cutout}

@@ -50,7 +50,14 @@ export function SceneUnfoldCanvas({
     };
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio, 2);
+      // Capped at 1, not 2 like Hero/other canvases — those draw sharp
+      // vector-ish content (shaders, text) that benefits from supersampling.
+      // This one draws a 1280x720 photo sequence, already well below most
+      // viewports' CSS pixel width; the source resolution is the actual
+      // bottleneck, so a 2x DPR canvas would just stretch that same source
+      // detail across 4x the pixels for no real gain — worse upscale
+      // softness with nothing to show for it.
+      const dpr = Math.min(window.devicePixelRatio, 1);
       width = container.clientWidth;
       height = container.clientHeight;
       canvas.width = width * dpr;
